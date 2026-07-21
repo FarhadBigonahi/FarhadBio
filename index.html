@@ -231,7 +231,27 @@ a[data-framer-name="Desktop"]:hover,
   <script defer src="/sections/skills-certs.js"></script>
   <style>#main section[data-framer-name="Expertise"],#main section[data-framer-name="Project"],#main .framer-yb85hi-container{display:none!important}</style>
   <noscript><style>#main section[data-framer-name="Expertise"],#main section[data-framer-name="Project"],#main .framer-yb85hi-container{display:revert!important}</style></noscript>
+  <style>/* fx-header-top: pin the nav to the very top edge (was top:24px, which left an empty strip above it) and pad it for breathing room; the header's own gradient scrim then covers that top strip. Desktop-only so tablet/mobile headers are untouched. */
+  @media (min-width:1200px){#main header[data-framer-name="Header"]{top:0!important;height:auto!important;padding:22px 0!important}}</style>
   <!--WFX:ASSETS:END-->
+<!--WNAV:ASSETS:START-->
+  <style>/* Remove the About page + Projects route. These are dead client-side
+    Framer routes (no physical file, so a direct hit 404s), reachable only via
+    nav/footer links. We hide each link's generated -container wrapper (not just
+    the <a>) so the flex row's gap collapses cleanly, and the container classes
+    were verified 1:1 with their href. Stylesheet rules are reconcile-proof:
+    Framer's late React re-renders rebuild DOM nodes but never touch <head> CSS,
+    so unlike a one-shot JS .remove() these stay removed. The generic a[href]
+    rules are a fallback for any dynamically-rendered menu (e.g. mobile drawer).
+    NOTE: the homepage About *section* (data-framer-name="About") is intentionally
+    KEPT — only the /about route + its links are removed. */
+  #main .framer-ri69pa-container,   /* About   — top nav */
+  #main .framer-hkj7fx-container,   /* About   — footer  */
+  #main .framer-17kdnf8-container,  /* Project — top nav */
+  #main .framer-1sq4mrj-container,  /* Project — footer  */
+  #main a[href="./about"],
+  #main a[href="./project"]{display:none!important}</style>
+  <!--WNAV:ASSETS:END-->
 </head>
 <body>
 	<!-- tracking script removed -->
