@@ -1,0 +1,6 @@
+# Dev-only Node static server. It must NOT be deployed: Vercel auto-detects a
+# root file that calls .listen() and wraps it as a catch-all serverless
+# function, which then serves the ENTIRE site through slow, uncached function
+# invocations instead of the static CDN (2s+ per image, blog hangs).
+# Excluding it forces pure static serving. Local dev still runs `node server.mjs`.
+server.mjs
