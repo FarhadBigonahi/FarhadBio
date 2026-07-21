@@ -37,7 +37,7 @@ createServer(async (req, res) => {
     // are stored (and were served by the CDN) under /cms/{id}/... — alias them.
     if (pathname.startsWith('/modules/')) pathname = '/cms/' + pathname.slice('/modules/'.length);
     // prevent path traversal
-    const filePath = normalize(join(ROOT, pathname));
+    let filePath = normalize(join(ROOT, pathname));
     if (!filePath.startsWith(ROOT)) { res.writeHead(403).end('Forbidden'); return; }
 
     let st;
