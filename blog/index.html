@@ -27,9 +27,17 @@
   <script>document.documentElement.classList.add('wb-js')</script>
 </head>
 <body class="wb-page">
-  <nav class="wb-nav">
+  <nav class="wb-nav" dir="ltr" aria-label="Primary">
     <a class="wb-nav__brand" href="/"><img src="/images/apple-touch-icon.png" alt=""> Farhad Bigonahi</a>
-    <div class="wb-nav__links"><a href="/">Home</a><a href="/blog/">Blog</a><a href="https://farhad.bio/">Portfolio</a></div>
+    <div class="wb-nav__links">
+      <a href="/">Home</a>
+      <a href="/blog/">Blog</a>
+      <a href="mailto:business@farhad.bio">Contact</a>
+    </div>
+    <div class="wb-nav__switch" role="group" aria-label="Language">
+      <a href="/" hreflang="en" title="English">EN</a>
+      <span class="is-active" aria-current="true" lang="fa">FA</span>
+    </div>
   </nav>
   <header class="wb-index__head">
     <p class="wb-eyebrow" dir="ltr">Blog</p>

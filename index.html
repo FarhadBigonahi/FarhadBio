@@ -157,15 +157,36 @@ a[href*="./blog"] img{ filter:none !important; }
 a[data-framer-name="Logo"] img,
 [data-framer-name="Logo"] img{ filter:brightness(0) invert(1) !important; }
 
-/* ---- HEADER: dark glassy bar with white foreground ----
-   The mobile nav container ("Closed"/"Open") shipped with a white background;
-   make it a translucent dark blur so the logo/menu read as white foreground. */
-[data-framer-name="Closed"],
+/* ---- HEADER: transparent resting bar; dark glassy only for the OPEN menu ----
+   The mobile nav ("Closed"/"Open") shipped with a white background. The OPEN
+   full-screen menu keeps a dark glassy blur so its links read as white foreground.
+   The CLOSED resting bar is transparent so the hero photo reads to the very top
+   (no dead band across the top); top legibility comes from the hero scrim below. */
 [data-framer-name="Open"]{
   background:rgba(9,14,26,.70) !important;
   backdrop-filter:saturate(150%) blur(16px);
   -webkit-backdrop-filter:saturate(150%) blur(16px);
   border-bottom:1px solid rgba(255,255,255,.07);
+}
+[data-framer-name="Closed"]{
+  background:transparent !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  border-bottom:0 !important;
+}
+
+/* ---- HERO: cinematic top-scrim — fixes the flat "dead band" at the very top ----
+   The hero is a position:sticky scroll-sequence; NEVER change its layout/position
+   (doing so desyncs the pinned photo swap). This ::before overlays the pinned photo
+   (z-index above the image, below the z-index:10 header) and fades the page navy
+   (#080d17) down into the image, so the top reads as an intentional gradient rather
+   than a washed-out empty strip. It also replaces the old hard 75px header seam. */
+header[data-framer-name="Header"]{ background-image:none !important; }
+section[data-framer-name="Hero"]::before{
+  content:""; position:absolute; top:0; left:0; right:0; height:200px;
+  background:linear-gradient(to bottom,
+    #080d17 0%, rgba(8,13,23,.72) 22%, rgba(8,13,23,.32) 58%, rgba(8,13,23,0) 100%);
+  pointer-events:none; z-index:3;
 }
 /* Open mobile-menu links read as white foreground; blue on hover (accent) */
 [data-framer-name="Open"] a,
@@ -193,7 +214,8 @@ a[data-framer-name="Desktop"]:hover,
   <script>document.documentElement.classList.add('wb-js')</script>
   <script defer src="/blog/blog.js"></script>
   <style>
-    /* Hide the original Framer blog section (replaced by the injected featured card) */
+    /* Blog section is intentionally removed from the homepage (the blog lives at
+       /blog/, reachable via the "Blogs" nav link). Hide the original Framer section. */
     #main section[data-framer-name="Blog"]{display:none!important}
     /* Hero legibility: darken the rotating background so overlaid white text is
        readable on every slide, add a top scrim behind the nav, drop the corner
@@ -203,7 +225,6 @@ a[data-framer-name="Desktop"]:hover,
     #main section[data-framer-name="Hero"] .framer-text{text-shadow:0 1px 14px rgba(0,0,0,.5)}
     #main .framer-ke3y14-container{display:none!important}
   </style>
-  <noscript><style>#main section[data-framer-name="Blog"]{display:flex!important}</style></noscript>
   <!--WBLOG:ASSETS:END-->
 <!--WFX:ASSETS:START-->
   <link rel="stylesheet" href="/sections/skills-certs.css">
@@ -236,35 +257,6 @@ a[data-framer-name="Desktop"]:hover,
 	<!-- Start of bodyEnd -->
     
     <!-- End of bodyEnd -->
-<!--WBLOG:TEMPLATE:START-->
-<template id="wb-featured-tpl">
-<section class="wb-insights" data-wb-name="Blog" aria-label="Latest Insights">
-  <div class="wb-container">
-    <div class="wb-insights__head wb-reveal">
-      <div>
-        <p class="wb-eyebrow">Blog</p>
-        <h2 class="wb-insights__title">Latest Insights</h2>
-        <p class="wb-insights__sub">Notes on building, AI and open-source tools.</p>
-      </div>
-      <a class="wb-viewall" href="/blog/">View all posts <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M11 6l6 6-6 6M6 12h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-    </div>
-    <a class="wb-featured wb-reveal" style="--wb-delay:120ms" href="/blog/whisp/" aria-label="هوش مصنوعی به حرفت گوش نمی‌کنه؟">
-      <div class="wb-featured__media">
-        <span class="wb-featured__badge"><span class="wb-dot"></span>Open Source</span>
-        <picture><source srcset="/images/blog/whisp-ai-whip-cover.webp" type="image/webp"><img src="/images/blog/whisp-ai-whip-cover.png" width="941" height="1672" alt="پوستر مقاله Whisp: مردی با تیشرت سفید و دست‌به‌سینه در اتاق گیمینگ، با متن «هوش مصنوعی به حرفت گوش نمیکنه؟» و لوگوی چت‌جی‌پی‌تی" loading="lazy"></picture>
-      </div>
-      <div class="wb-featured__body" dir="rtl">
-        <div class="wb-tags"><span class="wb-tag wb-tag--accent">Open Source</span><span class="wb-tag">ابزار</span><span class="wb-tag">هوش مصنوعی</span></div>
-        <h3 class="wb-featured__title">🐎 هوش مصنوعی به حرفت گوش نمی‌کنه؟</h3>
-        <p class="wb-featured__excerpt">Whisp یا «شلاق» یک اپ سبک و متن‌بازه؛ وقتی هوش مصنوعی به حرفت گوش نمی‌کنه، با یک شلاق آبیِ چسبیده به موس بهش گوشزد می‌کنی. نصب سریع با npm و کاملاً Open Source.</p>
-        <div class="wb-featured__meta"><time datetime="2026-07-21">۳۰ تیر ۱۴۰۵</time><span class="sep"></span><span>۲ دقیقه مطالعه</span></div>
-        <span class="wb-cta">خواندن مقاله <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 6l-6 6 6 6M18 12H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      </div>
-    </a>
-  </div>
-</section>
-</template>
-<!--WBLOG:TEMPLATE:END-->
 <!--WFX:TEMPLATE:START-->
 <template id="fx-skills-tpl"><section class="fx-section fx-skills" data-fx="skills" aria-label="Skills"><div class="fx-container"><h2 class="fx-title">Skills</h2><p class="fx-sub">Core stack &amp; day-to-day tools</p><div class="fx-skillgrid"><div class="fx-skill fx-reveal"><div class="fx-skill-head"><span class="fx-skill-name">C#</span><span class="fx-skill-pct">97%</span></div><div class="fx-track"><span class="fx-fill" style="--pct:97%"></span></div></div><div class="fx-skill fx-reveal"><div class="fx-skill-head"><span class="fx-skill-name">ASP.NET Core</span><span class="fx-skill-pct">93%</span></div><div class="fx-track"><span class="fx-fill" style="--pct:93%"></span></div></div><div class="fx-skill fx-reveal"><div class="fx-skill-head"><span class="fx-skill-name">Web API / REST</span><span class="fx-skill-pct">91%</span></div><div class="fx-track"><span class="fx-fill" style="--pct:91%"></span></div></div><div class="fx-skill fx-reveal"><div class="fx-skill-head"><span class="fx-skill-name">SQL Server &amp; EF Core</span><span class="fx-skill-pct">88%</span></div><div class="fx-track"><span class="fx-fill" style="--pct:88%"></span></div></div><div class="fx-skill fx-reveal"><div class="fx-skill-head"><span class="fx-skill-name">JavaScript / TypeScript</span><span class="fx-skill-pct">86%</span></div><div class="fx-track"><span class="fx-fill" style="--pct:86%"></span></div></div><div class="fx-skill fx-reveal"><div class="fx-skill-head"><span class="fx-skill-name">React &amp; Next.js</span><span class="fx-skill-pct">83%</span></div><div class="fx-track"><span class="fx-fill" style="--pct:83%"></span></div></div><div class="fx-skill fx-reveal"><div class="fx-skill-head"><span class="fx-skill-name">HTML &amp; CSS</span><span class="fx-skill-pct">89%</span></div><div class="fx-track"><span class="fx-fill" style="--pct:89%"></span></div></div><div class="fx-skill fx-reveal"><div class="fx-skill-head"><span class="fx-skill-name">Git &amp; CI/CD</span><span class="fx-skill-pct">85%</span></div><div class="fx-track"><span class="fx-fill" style="--pct:85%"></span></div></div></div></div></section></template>
 <template id="fx-cert-tpl"><section class="fx-section fx-certs" data-fx="certs" aria-label="Certification"><div class="fx-container"><h2 class="fx-title">Certification</h2><p class="fx-sub">Verified training credential</p><div class="fx-certgrid"><article class="fx-cert fx-cert--photo fx-reveal"><button type="button" class="fx-cert-thumb" data-fx-lightbox="/images/certificate-aspnet.jpg" aria-label="Open ASP.NET certificate full size"><img src="/images/certificate-aspnet.jpg" width="1079" height="778" alt="ASP.NET training certificate issued to Farhad Bigonahi by Santa Monica Certification, Dubai" loading="lazy" decoding="async"><span class="fx-cert-zoom" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path></svg></span></button><div class="fx-cert-body"><span class="fx-cert-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5"></path></svg></span><h3 class="fx-cert-title">ASP.NET Certification</h3><p class="fx-cert-org">Santa Monica Certification (SMC) · Dubai</p><p class="fx-cert-meta">Sep – Oct 2023 · 130 hours</p><button type="button" class="fx-cert-view" data-fx-lightbox="/images/certificate-aspnet.jpg">View certificate<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg></button></div></article></div></div></section></template>

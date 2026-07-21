@@ -95,9 +95,17 @@ function head(site, { title, description, url, image, imageAlt, post }) {
   <script>document.documentElement.classList.add('wb-js')</script>${ld ? `\n  <script type="application/ld+json">${ld}</script>` : ""}`;
 }
 
-const navBar = (site) => `  <nav class="wb-nav">
+const navBar = (site) => `  <nav class="wb-nav" dir="ltr" aria-label="Primary">
     <a class="wb-nav__brand" href="/"><img src="/images/apple-touch-icon.png" alt=""> ${esc(site.name)}</a>
-    <div class="wb-nav__links"><a href="/">Home</a><a href="/blog/">Blog</a><a href="${esc(site.authorUrl)}">Portfolio</a></div>
+    <div class="wb-nav__links">
+      <a href="/">Home</a>
+      <a href="/blog/">Blog</a>
+      <a href="mailto:business@farhad.bio">Contact</a>
+    </div>
+    <div class="wb-nav__switch" role="group" aria-label="Language">
+      <a href="/" hreflang="en" title="English">EN</a>
+      <span class="is-active" aria-current="true" lang="fa">FA</span>
+    </div>
   </nav>`;
 
 const footer = (site) => `  <footer class="wb-footer">
@@ -236,7 +244,8 @@ function assetBlock() {
   <script>document.documentElement.classList.add('wb-js')</script>
   <script defer src="/blog/blog.js"></script>
   <style>
-    /* Hide the original Framer blog section (replaced by the injected featured card) */
+    /* Blog section is intentionally removed from the homepage (the blog lives at
+       /blog/, reachable via the "Blogs" nav link). Hide the original Framer section. */
     #main section[data-framer-name="Blog"]{display:none!important}
     /* Hero legibility: darken the rotating background so overlaid white text is
        readable on every slide, add a top scrim behind the nav, drop the corner
@@ -246,7 +255,6 @@ function assetBlock() {
     #main section[data-framer-name="Hero"] .framer-text{text-shadow:0 1px 14px rgba(0,0,0,.5)}
     #main .framer-ke3y14-container{display:none!important}
   </style>
-  <noscript><style>#main section[data-framer-name="Blog"]{display:flex!important}</style></noscript>
   ${A1}`;
 }
 
@@ -267,7 +275,10 @@ function replaceOrInsert(html, start, end, block, anchor) {
 
 function patchHomepage(html, post, site) {
   html = replaceOrInsert(html, A0, A1, assetBlock(), "</head>");
-  html = replaceOrInsert(html, T0, T1, templateBlock(post, site), "</body>");
+  // Blog is intentionally NOT featured on the homepage — strip any previously
+  // injected featured template so nothing renders there.
+  const esc2 = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  html = html.replace(new RegExp("\\n?" + esc2(T0) + "[\\s\\S]*?" + esc2(T1)), "");
   return html;
 }
 

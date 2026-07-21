@@ -10,6 +10,11 @@
 @font-face{font-family:"IRANSansX";font-style:normal;font-weight:700;font-display:swap;src:url("/fonts/iransansx/IRANSansX-Bold.woff2") format("woff2")}
 @font-face{font-family:"IRANSansX";font-style:normal;font-weight:900;font-display:swap;src:url("/fonts/iransansx/IRANSansX-Black.woff2") format("woff2")}
 
+/* ---- Satoshi (matches the site's Latin type — nav, headings) ------- */
+@font-face{font-family:"Satoshi";font-style:normal;font-weight:400;font-display:swap;src:url("/third-party-assets/fontshare/wf/TTX2Z3BF3P6Y5BQT3IV2VNOK6FL22KUT/7QYRJOI3JIMYHGY6CH7SOIFRQLZOLNJ6/KFIAZD4RUMEZIYV6FQ3T3GP5PDBDB6JY.woff2") format("woff2")}
+@font-face{font-family:"Satoshi";font-style:normal;font-weight:500;font-display:swap;src:url("/third-party-assets/fontshare/wf/P2LQKHE6KA6ZP4AAGN72KDWMHH6ZH3TA/ZC32TK2P7FPS5GFTL46EU6KQJA24ZYDB/7AHDUZ4A7LFLVFUIFSARGIWCRQJHISQP.woff2") format("woff2")}
+@font-face{font-family:"Satoshi";font-style:normal;font-weight:700;font-display:swap;src:url("/third-party-assets/fontshare/wf/LAFFD4SDUCDVQEXFPDC7C53EQ4ZELWQI/PXCT3G6LO6ICM5I3NTYENYPWJAECAWDD/GHM6WVH6MILNYOOCXHXB5GTSGNTMGXZR.woff2") format("woff2")}
+
 /* ---- Tokens (mirrors the site's Framer palette) ------------------- */
 :root{
   --wb-bg:#0b1220;
@@ -24,7 +29,7 @@
   --wb-accent-2:#39b0ff;
   --wb-glow:rgba(0,153,255,.35);
   --wb-fa:"IRANSansX",-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif;
-  --wb-latin:"Inter","Inter Placeholder",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --wb-latin:"Satoshi","Satoshi Placeholder","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   --wb-mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Menlo,Consolas,"Courier New",monospace;
   --wb-radius:20px;
   --wb-ease:cubic-bezier(.22,.61,.36,1);
@@ -120,12 +125,22 @@
 .wb-page *{box-sizing:border-box}
 .wb-wrap{max-width:760px;margin:0 auto;padding:0 24px}
 
-.wb-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;background:rgba(11,18,32,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--wb-border)}
-.wb-nav__brand{display:inline-flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-family:var(--wb-latin);font-weight:600;letter-spacing:-.01em}
-.wb-nav__brand img{width:26px;height:26px;border-radius:7px}
-.wb-nav__links{display:flex;gap:6px;font-family:var(--wb-latin);font-size:14px}
-.wb-nav__links a{color:var(--wb-muted);text-decoration:none;padding:8px 14px;border-radius:999px;transition:.3s var(--wb-ease)}
-.wb-nav__links a:hover{color:#fff;background:rgba(255,255,255,.06)}
+/* Nav mirrors the homepage: logo+name left, links centered, action right.
+   Forced LTR (chrome is Latin) even on RTL article pages. */
+.wb-nav{position:sticky;top:0;z-index:50;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:18px 30px;background:rgba(11,18,32,.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--wb-border)}
+.wb-nav__brand{justify-self:start;display:inline-flex;align-items:center;gap:11px;color:#fff;text-decoration:none;font-family:var(--wb-latin);font-weight:600;font-size:17px;letter-spacing:-.01em}
+.wb-nav__brand img{width:28px;height:28px;border-radius:8px}
+.wb-nav__links{justify-self:center;display:flex;gap:2px;font-family:var(--wb-latin)}
+.wb-nav__links a{color:#fff;opacity:.82;text-decoration:none;font-size:16px;font-weight:400;padding:8px 16px;border-radius:999px;transition:.25s var(--wb-ease)}
+.wb-nav__links a:hover{opacity:1;background:rgba(255,255,255,.08)}
+.wb-nav__switch{justify-self:end;display:inline-flex;align-items:center;gap:2px;background:rgba(255,255,255,.05);border:1px solid var(--wb-border-strong);border-radius:999px;padding:3px;font-family:var(--wb-latin);font-size:13px;font-weight:500}
+.wb-nav__switch a,.wb-nav__switch span{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:6px 11px;border-radius:999px;color:var(--wb-muted);text-decoration:none;transition:.25s var(--wb-ease);cursor:pointer;line-height:1}
+.wb-nav__switch a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.wb-nav__switch .is-active{background:var(--wb-accent);color:#fff;font-weight:600;cursor:default}
+@media (max-width:720px){
+  .wb-nav{grid-template-columns:1fr auto;padding:14px 18px}
+  .wb-nav__links{display:none}
+}
 
 .wb-footer{border-top:1px solid var(--wb-border);margin-top:80px;padding:34px 24px;text-align:center;color:var(--wb-dim);font-family:var(--wb-latin);font-size:13.5px}
 .wb-footer a{color:var(--wb-muted);text-decoration:none}
