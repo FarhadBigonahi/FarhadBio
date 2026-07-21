@@ -7,15 +7,15 @@ It runs fully offline — no calls to Framer's servers.
 ## Run it
 
 ```bash
-node server.mjs
+node scripts/dev-server.mjs
 # then open http://localhost:8137
 ```
 
-Change the port with `PORT=3000 node server.mjs`.
+Change the port with `PORT=3000 node scripts/dev-server.mjs`.
 
 > It must be **served**, not opened as a `file://` page. This is a React / ES-module app
 > (built by Framer), and browsers block ES modules + the CMS range-requests under `file://`.
-> `server.mjs` is a tiny zero-dependency static server that provides the two things Framer needs:
+> `scripts/dev-server.mjs` is a tiny zero-dependency static server that provides the two things Framer needs:
 > correct MIME types for `.mjs`/`.woff2`, and HTTP **Range** support for the `.framercms` data files.
 
 ## What's inside
@@ -27,7 +27,7 @@ Change the port with `PORT=3000 node server.mjs`.
 | `images/` | 30 original-resolution images |
 | `assets/`, `third-party-assets/fontshare/` | Inter + Fontshare fonts (all unicode subsets) |
 | `cms/` | The `.framercms` data files driving Projects / Awards / Blog |
-| `server.mjs` | Static server with Range support + a `/modules → /cms` path alias |
+| `scripts/dev-server.mjs` | **Dev-only** static server (Range support + `/modules → /cms` alias). Not deployed — production is served statically by Vercel per `vercel.json`. |
 | `_capture/` | Capture & verification scaffolding (manifest, download/rewrite/verify scripts, screenshots). Not needed to run. |
 
 ## How the clone was made faithful

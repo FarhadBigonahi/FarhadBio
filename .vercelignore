@@ -1,6 +1,8 @@
-# Dev-only Node static server. It must NOT be deployed: Vercel auto-detects a
-# root file that calls .listen() and wraps it as a catch-all serverless
-# function, which then serves the ENTIRE site through slow, uncached function
-# invocations instead of the static CDN (2s+ per image, blog hangs).
-# Excluding it forces pure static serving. Local dev still runs `node server.mjs`.
+# Dev-only tooling must NOT be deployed. A root-level Node server file that
+# calls .listen() gets auto-detected by Vercel and wrapped as a catch-all
+# serverless function, which then serves the ENTIRE site through slow, uncached
+# function invocations instead of the static CDN (2s+ per image, blog hangs).
+# The dev server now lives in scripts/ (out of root) AND is excluded here so
+# the deployment stays a pure static site. Local dev: `node scripts/dev-server.mjs`.
+scripts/
 server.mjs
