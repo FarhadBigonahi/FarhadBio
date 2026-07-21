@@ -34,8 +34,8 @@
         var code = btn.closest(".wb-code");
         var text = code ? code.querySelector("code").innerText : "";
         var done = function () {
-          btn.textContent = "Copied"; btn.classList.add("is-done");
-          setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("is-done"); }, 1600);
+          btn.textContent = "کپی شد!"; btn.classList.add("is-done");
+          setTimeout(function () { btn.textContent = "کپی"; btn.classList.remove("is-done"); }, 1600);
         };
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(text).then(done).catch(function () {});

@@ -24,10 +24,10 @@
   --wb-border-strong:rgba(255,255,255,.16);
   --wb-text:#ffffff;
   --wb-muted:#c8d3e6;
-  --wb-dim:#8a97ad;
+  --wb-dim:#9fb0c9;
   --wb-accent:#0099ff;
   --wb-accent-2:#39b0ff;
-  --wb-glow:rgba(0,153,255,.35);
+  --wb-glow:rgba(0,153,255,.28);
   --wb-fa:"IRANSansX",-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif;
   --wb-latin:"Satoshi","Satoshi Placeholder","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   --wb-mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Menlo,Consolas,"Courier New",monospace;
@@ -59,7 +59,7 @@
 .wb-insights::before{ /* soft accent aura */
   content:"";position:absolute;inset:auto -10% -40% auto;width:520px;height:520px;
   background:radial-gradient(circle at center,var(--wb-glow),transparent 62%);
-  filter:blur(20px);opacity:.5;pointer-events:none;z-index:0;
+  filter:blur(16px);opacity:.3;pointer-events:none;z-index:0;
 }
 .wb-container{max-width:1140px;margin:0 auto;position:relative;z-index:1}
 .wb-insights__head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:34px;flex-wrap:wrap}
@@ -89,7 +89,7 @@
 }
 .wb-featured:hover{transform:translateY(-6px);border-color:transparent;box-shadow:0 30px 70px -30px rgba(0,0,0,.8),0 0 0 1px rgba(0,153,255,.12)}
 .wb-featured:hover::after{opacity:1}
-.wb-featured:focus-visible{outline:2px solid var(--wb-accent);outline-offset:3px}
+.wb-featured:focus-visible{outline:2px solid var(--wb-accent-2);outline-offset:3px}
 
 .wb-featured__media{position:relative;overflow:hidden;background:#05080f;min-height:100%}
 .wb-featured__media img{display:block;width:100%;height:100%;object-fit:cover;object-position:center top;transition:transform .8s var(--wb-ease),filter .6s var(--wb-ease)}
@@ -130,8 +130,8 @@
 .wb-nav{position:sticky;top:0;z-index:50;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:18px 30px;background:rgba(11,18,32,.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--wb-border)}
 .wb-nav__brand{justify-self:start;display:inline-flex;align-items:center;gap:11px;color:#fff;text-decoration:none;font-family:var(--wb-latin);font-weight:600;font-size:17px;letter-spacing:-.01em}
 .wb-nav__brand img{width:28px;height:28px;border-radius:8px}
-.wb-nav__links{justify-self:center;display:flex;gap:2px;font-family:var(--wb-latin)}
-.wb-nav__links a{color:#fff;opacity:.82;text-decoration:none;font-size:16px;font-weight:400;padding:8px 16px;border-radius:999px;transition:.25s var(--wb-ease)}
+.wb-nav__links{justify-self:center;display:flex;gap:2px;font-family:var(--wb-fa)}
+.wb-nav__links a{color:#fff;opacity:.82;text-decoration:none;font-size:15.5px;font-weight:500;padding:8px 16px;border-radius:999px;transition:.25s var(--wb-ease)}
 .wb-nav__links a:hover{opacity:1;background:rgba(255,255,255,.08)}
 .wb-nav__switch{justify-self:end;display:inline-flex;align-items:center;gap:2px;background:rgba(255,255,255,.05);border:1px solid var(--wb-border-strong);border-radius:999px;padding:3px;font-family:var(--wb-latin);font-size:13px;font-weight:500}
 .wb-nav__switch a,.wb-nav__switch span{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:6px 11px;border-radius:999px;color:var(--wb-muted);text-decoration:none;transition:.25s var(--wb-ease);cursor:pointer;line-height:1}
@@ -142,7 +142,7 @@
   .wb-nav__links{display:none}
 }
 
-.wb-footer{border-top:1px solid var(--wb-border);margin-top:80px;padding:34px 24px;text-align:center;color:var(--wb-dim);font-family:var(--wb-latin);font-size:13.5px}
+.wb-footer{border-top:1px solid var(--wb-border);margin-top:80px;padding:34px 24px;text-align:center;color:var(--wb-dim);font-family:var(--wb-fa);font-size:13.5px}
 .wb-footer a{color:var(--wb-muted);text-decoration:none}
 .wb-footer a:hover{color:var(--wb-accent-2)}
 
@@ -190,7 +190,7 @@
 .wb-code__lang{font-family:var(--wb-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--wb-dim)}
 .wb-code__dots{display:flex;gap:6px}
 .wb-code__dots i{width:10px;height:10px;border-radius:50%;background:#2a3446;display:inline-block}
-.wb-copy{font-family:var(--wb-latin);font-size:12px;color:var(--wb-muted);background:transparent;border:1px solid var(--wb-border-strong);border-radius:7px;padding:4px 10px;cursor:pointer;transition:.25s var(--wb-ease)}
+.wb-copy{font-family:var(--wb-latin);font-size:12px;color:var(--wb-muted);background:transparent;border:1px solid var(--wb-border-strong);border-radius:10px;padding:4px 10px;cursor:pointer;transition:.25s var(--wb-ease)}
 .wb-copy:hover{color:#fff;border-color:var(--wb-accent)}
 .wb-copy.is-done{color:#61e0a1;border-color:rgba(97,224,161,.5)}
 .wb-code pre{margin:0;padding:16px 18px;overflow-x:auto}
@@ -216,9 +216,10 @@
    3) BLOG INDEX — post list
    ===================================================================== */
 .wb-index__head{text-align:center;padding:96px 24px 8px}
-.wb-index__head .wb-eyebrow{justify-content:center}
-.wb-index__title{font-family:var(--wb-latin);font-weight:600;font-size:clamp(30px,5vw,50px);letter-spacing:-.02em;margin:0;color:#fff}
-.wb-index__sub{color:var(--wb-dim);margin:14px auto 0;max-width:46ch;font-family:var(--wb-latin);font-size:15.5px;line-height:1.7}
+/* Persian eyebrow: no letter-spacing/uppercase (breaks cursive joining), Iran Sans X */
+.wb-index__head .wb-eyebrow{justify-content:center;font-family:var(--wb-fa);letter-spacing:normal;text-transform:none;font-size:14px}
+.wb-index__title{font-family:var(--wb-fa);font-weight:700;font-size:clamp(30px,5vw,50px);letter-spacing:-.01em;line-height:1.4;margin:0;color:#fff}
+.wb-index__sub{color:var(--wb-dim);margin:14px auto 0;max-width:46ch;font-family:var(--wb-fa);font-size:16px;line-height:1.9}
 .wb-list{max-width:900px;margin:48px auto 0;padding:0 24px;display:grid;gap:22px}
 .wb-card{display:grid;grid-template-columns:220px 1fr;gap:0;background:linear-gradient(180deg,var(--wb-surface),var(--wb-surface-2));border:1px solid var(--wb-border);border-radius:20px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .5s var(--wb-ease),border-color .5s var(--wb-ease),box-shadow .5s var(--wb-ease)}
 .wb-card:hover{transform:translateY(-5px);border-color:rgba(0,153,255,.3);box-shadow:0 26px 60px -30px rgba(0,0,0,.8)}
@@ -233,3 +234,28 @@
   .wb-card{grid-template-columns:1fr}
   .wb-card__media{aspect-ratio:16/10}
 }
+
+/* =====================================================================
+   4) UNIFIED INTERACTIVE STATES — one visible focus ring + press feel
+   Applies across every button, link, pill and card so keyboard users
+   always see focus and every control shares the same tactile response.
+   Placed last so :active/:focus-visible win over earlier same-specificity
+   hover rules (e.g. .wb-btn--primary:hover translate).
+   ===================================================================== */
+.wb-viewall:focus-visible,
+.wb-back:focus-visible,
+.wb-copy:focus-visible,
+.wb-btn:focus-visible,
+.wb-nav__brand:focus-visible,
+.wb-nav__links a:focus-visible,
+.wb-nav__switch a:focus-visible,
+.wb-card:focus-visible,
+.wb-footer a:focus-visible,
+.wb-prose a:focus-visible{
+  outline:2px solid var(--wb-accent-2);
+  outline-offset:3px;
+}
+.wb-viewall:active,
+.wb-back:active,
+.wb-copy:active,
+.wb-btn:active{transform:translateY(1px)}

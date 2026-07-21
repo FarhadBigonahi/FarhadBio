@@ -3,7 +3,7 @@
 // - HTTP Range support (required by Framer's .framercms chunked data loader)
 import { createServer } from 'node:http';
 import { stat, open } from 'node:fs/promises';
-import { join, extname, normalize } from 'node:path';
+import { join, extname, normalize, sep } from 'node:path';
 
 const ROOT = process.cwd();
 const PORT = process.env.PORT || 8080;
@@ -38,7 +38,9 @@ createServer(async (req, res) => {
     if (pathname.startsWith('/modules/')) pathname = '/cms/' + pathname.slice('/modules/'.length);
     // prevent path traversal
     let filePath = normalize(join(ROOT, pathname));
-    if (!filePath.startsWith(ROOT)) { res.writeHead(403).end('Forbidden'); return; }
+    // Confine to ROOT. Guard on ROOT + sep (not a bare prefix) so a sibling dir
+    // sharing ROOT's name — e.g. "<ROOT>-evil" — can't pass the startsWith check.
+    if (filePath !== ROOT && !filePath.startsWith(ROOT + sep)) { res.writeHead(403).end('Forbidden'); return; }
 
     let st;
     try { st = await stat(filePath); } catch { res.writeHead(404).end('Not found: ' + pathname); return; }

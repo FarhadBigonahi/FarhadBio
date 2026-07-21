@@ -9,7 +9,13 @@
     "twitter": "@its.farhad.bio",
     "sectionHeading": "Latest Insights",
     "sectionSubtitle": "Notes on building, AI and open-source tools.",
-    "viewAllLabel": "View all posts"
+    "viewAllLabel": "View all posts",
+    "blogEyebrow": "بلاگ",
+    "blogTitle": "آخرین مطالب",
+    "blogSubtitle": "ریلز ها",
+    "navHome": "خانه",
+    "navBlog": "بلاگ",
+    "navContact": "تماس"
   },
   "posts": [
     {

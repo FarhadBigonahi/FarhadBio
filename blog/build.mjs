@@ -44,7 +44,7 @@ function renderBlock(b) {
     case "code":
       return `<div class="wb-code"><div class="wb-code__bar"><span class="wb-code__dots"><i></i><i></i><i></i></span>` +
              `<span class="wb-code__lang">${esc(b.lang || "bash")}</span>` +
-             `<button class="wb-copy" type="button" aria-label="Copy code">Copy</button></div>` +
+             `<button class="wb-copy" type="button" aria-label="کپی کد">کپی</button></div>` +
              `<pre><code>${highlight(b.code)}</code></pre></div>`;
     default:        return "";
   }
@@ -98,18 +98,18 @@ function head(site, { title, description, url, image, imageAlt, post }) {
 const navBar = (site) => `  <nav class="wb-nav" dir="ltr" aria-label="Primary">
     <a class="wb-nav__brand" href="/"><img src="/images/apple-touch-icon.png" alt=""> ${esc(site.name)}</a>
     <div class="wb-nav__links">
-      <a href="/">Home</a>
-      <a href="/blog/">Blog</a>
-      <a href="mailto:business@farhad.bio">Contact</a>
+      <a href="/">${esc(site.navHome)}</a>
+      <a href="/blog/">${esc(site.navBlog)}</a>
+      <a href="mailto:business@farhad.bio">${esc(site.navContact)}</a>
     </div>
-    <div class="wb-nav__switch" role="group" aria-label="Language">
+    <div class="wb-nav__switch" role="group" aria-label="زبان">
       <a href="/" hreflang="en" title="English">EN</a>
       <span class="is-active" aria-current="true" lang="fa">FA</span>
     </div>
   </nav>`;
 
 const footer = (site) => `  <footer class="wb-footer">
-    © <span dir="ltr">2026</span> ${esc(site.name)} · ساخته‌شده با ❤️ — <a href="/blog/">همه مقالات</a>
+    © <span dir="ltr">2026 ${esc(site.name)}</span> — ساخته‌شده با ❤️ · <a href="/blog/">همه مطالب</a>
   </footer>`;
 
 // ---- article page ---------------------------------------------------
@@ -187,10 +187,10 @@ ${head(site, { title: `بلاگ | ${site.name}`, description: "یادداشت‌
 </head>
 <body class="wb-page">
 ${navBar(site)}
-  <header class="wb-index__head">
-    <p class="wb-eyebrow" dir="ltr">Blog</p>
-    <h1 class="wb-index__title">Latest Insights</h1>
-    <p class="wb-index__sub">یادداشت‌هایی درباره ساختن، هوش مصنوعی و ابزارهای متن‌باز.</p>
+  <header class="wb-index__head" dir="rtl">
+    <p class="wb-eyebrow">${esc(site.blogEyebrow)}</p>
+    <h1 class="wb-index__title">${esc(site.blogTitle)}</h1>
+    <p class="wb-index__sub">${esc(site.blogSubtitle)}</p>
   </header>
   <main class="wb-list">
 ${posts.map(renderCard).join("\n")}
