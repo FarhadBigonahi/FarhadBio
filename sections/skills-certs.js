@@ -26,6 +26,73 @@
     nodes.forEach(function (n) { io.observe(n); });
   }
 
+  // ---------- Certificate lightbox ----------
+  // Built once and appended to <body> (never inside a .fx-reveal, whose
+  // transform would break the overlay's position:fixed). Triggers carry
+  // data-fx-lightbox="<img url>"; wireLightbox binds them after injection.
+  var lb = null, lastFocus = null;
+
+  function ensureLightbox() {
+    if (lb) return lb;
+    lb = document.createElement("div");
+    lb.className = "fx-lightbox";
+    lb.hidden = true;
+    lb.setAttribute("role", "dialog");
+    lb.setAttribute("aria-modal", "true");
+    lb.setAttribute("aria-label", "Certificate preview");
+    lb.innerHTML =
+      '<img class="fx-lightbox__img" alt="">' +
+      '<button type="button" class="fx-lightbox__close" aria-label="Close certificate preview">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>' +
+      "</button>";
+    lb.addEventListener("click", function (e) {
+      if (e.target === lb || (e.target.closest && e.target.closest(".fx-lightbox__close"))) closeLightbox();
+    });
+    document.body.appendChild(lb);
+    return lb;
+  }
+
+  function onKey(e) {
+    if (e.key === "Escape") { closeLightbox(); return; }
+    // Only the close button is focusable — keep focus trapped on it.
+    if (e.key === "Tab") { e.preventDefault(); lb.querySelector(".fx-lightbox__close").focus(); }
+  }
+
+  function openLightbox(src, alt) {
+    var box = ensureLightbox();
+    var img = box.querySelector(".fx-lightbox__img");
+    img.src = src;
+    img.alt = alt || "Certificate";
+    lastFocus = document.activeElement;
+    box.hidden = false;
+    document.documentElement.classList.add("fx-lock");
+    requestAnimationFrame(function () { box.classList.add("is-open"); });
+    box.querySelector(".fx-lightbox__close").focus();
+    document.addEventListener("keydown", onKey);
+  }
+
+  function closeLightbox() {
+    if (!lb || lb.hidden) return;
+    lb.classList.remove("is-open");
+    document.documentElement.classList.remove("fx-lock");
+    document.removeEventListener("keydown", onKey);
+    var box = lb, hide = function () { box.hidden = true; box.removeEventListener("transitionend", hide); };
+    box.addEventListener("transitionend", hide);
+    setTimeout(hide, 400);                                   // fallback if transition is skipped
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  function wireLightbox(node) {
+    node.querySelectorAll("[data-fx-lightbox]").forEach(function (t) {
+      if (t.dataset.fxBound) return;                         // survive re-assert passes
+      t.dataset.fxBound = "1";
+      t.addEventListener("click", function () {
+        var img = t.querySelector("img");
+        openLightbox(t.getAttribute("data-fx-lightbox"), img && img.alt);
+      });
+    });
+  }
+
   // Clone one <template> into place right AFTER the original Framer section.
   function injectAfter(tplId, afterName, tag) {
     var tpl = document.getElementById(tplId);
@@ -40,6 +107,7 @@
       (main || document.body).appendChild(node);
     }
     observe(node);
+    wireLightbox(node);
     return !!document.querySelector('[data-fx="' + tag + '"]');
   }
 
