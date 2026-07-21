@@ -1,0 +1,26 @@
+# --- Backups & tooling scratch (kept on disk, never tracked) ---
+_backup_bio/
+_capture/
+.playwright-mcp/
+.easycode/
+
+# --- Root-level debug / capture screenshots ---
+# Anchored to repo root so images/ and assets/ PNGs stay tracked.
+/*.png
+
+# --- Node ---
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.vscode/
+.idea/
+
+# --- Logs ---
+*.log
