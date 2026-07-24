@@ -206,8 +206,8 @@
 /* Repo action row */
 .wb-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px;padding-top:30px;border-top:1px solid var(--wb-border)}
 .wb-btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:14.5px;text-decoration:none;padding:13px 22px;border-radius:12px;transition:.35s var(--wb-ease)}
-.wb-btn--primary{color:#fff;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.28);background:linear-gradient(135deg,#0a72d4,#0056b8);box-shadow:0 14px 34px -14px var(--wb-glow)}
-.wb-btn--primary:hover{transform:translateY(-2px);box-shadow:0 20px 44px -14px var(--wb-glow)}
+.wb-btn--primary{color:#0a1526;font-weight:700;background:#eff5ff;box-shadow:0 14px 30px -16px rgba(0,0,0,.55)}
+.wb-btn--primary:hover{transform:translateY(-2px);background:#fff;box-shadow:0 20px 42px -16px rgba(0,0,0,.6)}
 .wb-btn--ghost{color:var(--wb-muted);border:1px solid var(--wb-border-strong)}
 .wb-btn--ghost:hover{color:#fff;border-color:var(--wb-accent);background:rgba(0,153,255,.08)}
 .wb-btn svg{flex:none}

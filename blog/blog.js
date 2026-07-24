@@ -78,7 +78,34 @@
     })();
   }
 
-  function init() { reveal(); copyButtons(); }
+  // --- Homepage: force a real navigation to the static blog ----------
+  // The Framer SPA still owns a dead "/blog" route — the original template's
+  // CMS blog, whose data + code chunks were removed during the rebrand. Left
+  // alone, clicking a "Blogs" link makes Framer client-side-route into it,
+  // which throws a fatal CMS error ("Unexpected response length") + React #405
+  // and leaves a blank, hung screen. The real blog is a separate STATIC page
+  // at /blog/. Intercept blog-link clicks in the CAPTURE phase (before Framer's
+  // router sees them) and do a full-page navigation instead. Only arms on the
+  // Framer homepage (has #main); on the static blog pages this is a no-op, so
+  // their own links keep working normally.
+  function guardBlogLinks() {
+    if (window.__wbBlogGuard) return;                 // arm once
+    if (!document.getElementById("main")) return;     // Framer pages only
+    window.__wbBlogGuard = true;
+    document.addEventListener("click", function (e) {
+      if (e.defaultPrevented || e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // new tab etc.
+      var a = e.target.closest ? e.target.closest("a[href]") : null;
+      if (!a || a.target === "_blank") return;
+      // Match Framer's internal blog links: "./blog", "/blog", ".../blog/..."
+      if (!/^(\.?\/)?blog(\/|$)/.test(a.getAttribute("href") || "")) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();                   // beat Framer's handler
+      window.location.assign("/blog/");               // real load of the static blog
+    }, true);                                         // capture phase
+  }
+
+  function init() { reveal(); copyButtons(); guardBlogLinks(); }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);

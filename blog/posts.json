@@ -50,7 +50,7 @@
         { "type": "code", "lang": "bash", "code": "whisp" },
         { "type": "p", "html": "یا اگه دوست داری سورسش رو اجرا یا تغییر بدی:" },
         { "type": "code", "lang": "bash", "code": "git clone https://github.com/FarhadBigonahi/Whisp.git\ncd Whisp\nnpm install\nnpm start" },
-        { "type": "callout", "html": "⭐ پروژه کاملاً <strong>Open Source</strong> هست؛ اگه خوشت اومد یه Star بده، و هر ایده‌ای داشتی توی گیت‌هاب باهام درمیون بذار." }
+        { "type": "callout", "html": "⭐ پروژه کاملاً <strong>Open Source</strong> هست؛ اگه خوشت اومد یه Star بده." }
       ]
     }
   ]
