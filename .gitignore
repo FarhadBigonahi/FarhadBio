@@ -5,13 +5,26 @@ _capture/
 .easycode/
 
 # --- Root-level debug / capture screenshots ---
-# Anchored to repo root so images/ and assets/ PNGs stay tracked.
+# Anchored to repo root so public/ assets stay tracked.
 /*.png
 
+# --- Next.js ---
+/.next/
+/out/
+/build/
+next-env.d.ts
+*.tsbuildinfo
+
 # --- Node ---
-node_modules/
+/node_modules/
 npm-debug.log*
 yarn-error.log*
+
+# --- Vercel ---
+.vercel/
+
+# --- Env files ---
+.env*.local
 
 # --- OS / editor cruft ---
 .DS_Store
