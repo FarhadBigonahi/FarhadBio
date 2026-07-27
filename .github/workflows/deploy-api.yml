@@ -1,0 +1,88 @@
+name: Deploy API
+
+# Push-to-deploy for the backend only. The frontend half of this repo is
+# deployed by Vercel on the same push; the two are independent by design, so a
+# broken API deploy never blocks a frontend release (or vice versa).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "server/**"
+      - ".github/workflows/deploy-api.yml"
+  workflow_dispatch:
+
+# One deploy at a time. Two concurrent runs would race on the `current` symlink.
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Typecheck here rather than on the box: the runner is fast and free, and
+      # catching it here means the server never starts a doomed build.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install + typecheck
+        working-directory: server
+        run: |
+          npm ci --no-audit --no-fund
+          npm run typecheck
+
+      - name: Compute release id
+        id: release
+        run: echo "id=$(date -u +%Y%m%d%H%M%S)-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Upload release
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          RELEASE: ${{ steps.release.outputs.id }}
+        run: |
+          TARGET="/home/$DEPLOY_USER/apps/farhadbio-api/releases/$RELEASE"
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$TARGET'"
+          # Source only — node_modules and dist are produced on the server so
+          # the artefacts always match that machine's Node and libc.
+          rsync -az --delete \
+            --exclude 'node_modules' \
+            --exclude 'dist' \
+            --exclude 'data' \
+            --exclude '.env' \
+            server/ "$DEPLOY_USER@$DEPLOY_HOST:$TARGET/"
+          # Ship the deploy script fresh every time so it is never stale.
+          scp server/deploy/server-deploy.sh "$DEPLOY_USER@$DEPLOY_HOST:/home/$DEPLOY_USER/farhadbio-deploy.sh"
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "chmod +x /home/$DEPLOY_USER/farhadbio-deploy.sh"
+
+      - name: Deploy (atomic, health-checked, auto-rollback)
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          RELEASE: ${{ steps.release.outputs.id }}
+        run: |
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" \
+            "/home/$DEPLOY_USER/farhadbio-deploy.sh '$RELEASE'"
+
+      - name: Verify public endpoint
+        run: |
+          # Proves the whole chain — Cloudflare, nginx, pm2, SQLite — not just
+          # that the process started.
+          curl -fsS --max-time 20 https://api.farhad.bio/health/ready

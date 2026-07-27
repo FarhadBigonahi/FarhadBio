@@ -28,8 +28,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BlogIndex() {
-  const posts = getAllPosts();
+// Statically cached, but revalidated so new posts appear without a redeploy.
+export const revalidate = 60;
+
+export default async function BlogIndex() {
+  const posts = await getAllPosts();
 
   return (
     <div className="wb-page wb-js" lang="fa" dir="rtl">

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./skills-certs.css";
+import Beacon from "@/components/Beacon";
 
 const satoshi = localFont({
   variable: "--font-satoshi",
@@ -111,7 +112,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${satoshi.variable} ${iranSansX.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Beacon />
+      </body>
     </html>
   );
 }

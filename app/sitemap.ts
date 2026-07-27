@@ -1,13 +1,17 @@
 import type { MetadataRoute } from "next";
-import { getAllPosts } from "@/lib/content";
+import { getAllPostsSafe } from "@/lib/content";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const revalidate = 60;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = "https://farhad.bio";
   const lastModified = new Date("2026-07-21");
 
-  const postEntries: MetadataRoute.Sitemap = getAllPosts().map((p) => ({
+  // Safe variant: a backend hiccup should degrade the sitemap to its static
+  // entries, never fail the build or serve a 500 to a crawler.
+  const postEntries: MetadataRoute.Sitemap = (await getAllPostsSafe()).map((p) => ({
     url: `${base}/blog/${p.slug}/`,
-    lastModified,
+    lastModified: p.date ? new Date(p.date) : lastModified,
     changeFrequency: "monthly",
     priority: 0.7,
   }));

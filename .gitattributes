@@ -1,0 +1,20 @@
+# Normalise line endings.
+#
+# The deploy scripts run under bash on Ubuntu. If git checked them out with
+# CRLF (the Windows default on this machine), every line would end in \r and
+# bash would fail with confusing "command not found" errors. Force LF for
+# anything that is executed on a server.
+* text=auto
+
+*.sh      text eol=lf
+*.conf    text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+Dockerfile text eol=lf
+
+# Binary — never touch.
+*.db      binary
+*.png     binary
+*.jpg     binary
+*.webp    binary
+*.woff2   binary

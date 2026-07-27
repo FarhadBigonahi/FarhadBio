@@ -3,20 +3,27 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getAllPosts, getPost, site, type Block } from "@/lib/content";
+import { getAllPostsSafe, getPost, site, type Block } from "@/lib/content";
 import { BlogNav, BlogFooter } from "@/components/BlogChrome";
 import BlogEnhancements from "@/components/BlogEnhancements";
 import { blogPostingJsonLd } from "@/lib/seo";
 
 type Params = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return getAllPosts().map((p) => ({ slug: p.slug }));
+// Prebuild known posts; new posts render on-demand (dynamicParams default true)
+// and are cached via ISR + revalidatePath on publish.
+export const revalidate = 60;
+
+// Safe variant: if the backend is unreachable at build time we prebuild
+// nothing and every post renders on demand instead — a slower first hit, but
+// the deploy still ships.
+export async function generateStaticParams() {
+  return (await getAllPostsSafe()).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPost(slug);
+  const post = await getPost(slug);
   if (!post) return {};
   const url = `${site.baseUrl}/blog/${post.slug}/`;
   const img = `${site.baseUrl}${post.coverFallback}`;
@@ -109,7 +116,7 @@ function renderBlock(block: Block, i: number) {
 
 export default async function Article({ params }: Params) {
   const { slug } = await params;
-  const post = getPost(slug);
+  const post = await getPost(slug);
   if (!post) notFound();
 
   return (
