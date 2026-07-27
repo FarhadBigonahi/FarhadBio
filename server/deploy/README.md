@@ -95,22 +95,44 @@ on the box down with it.
 
 ### TLS
 
-`farhad.bio` is on Cloudflare DNS, so `api.farhad.bio` is proxied (orange
-cloud) with the zone on **Full (strict)**, and the origin uses a **Cloudflare
-Origin CA certificate**:
+`api.farhad.bio` is **proxied** through Cloudflare (orange cloud), so the
+origin certificate only ever has to satisfy Cloudflare — not browsers.
+
+Certificate lives at:
+```
+/etc/ssl/farhadbio/api.crt   (644)
+/etc/ssl/farhadbio/api.key   (600, root only)
+```
+`provision.sh` enables the vhost as soon as both exist.
+
+**Two constraints make this awkward, and both come from the host being in Iran:**
+
+| Method | Why it does / doesn't work |
+|---|---|
+| HTTP-01 on the box | ✗ The record is proxied — Let's Encrypt would validate against Cloudflare, not the origin |
+| DNS-01 **on the box** | ✗ The Cloudflare API is geo-blocked from this server's IP (error 9109) |
+| DNS-01 from a **non-Iran host** | ✓ What is in use today — see `renew-cert.sh` |
+| Cloudflare **Origin CA** cert | ✓ Best long-term option: 15-year validity, zero renewal |
+
+**Currently installed:** a Let's Encrypt certificate obtained by DNS-01 from
+the ops box (`65.109.81.148`), which is outside Iran and can reach the
+Cloudflare API. **It expires every 90 days** — run `deploy/renew-cert.sh` from
+that host, or set it on a schedule.
+
+**Recommended:** replace it with a Cloudflare Origin CA certificate and stop
+thinking about renewal:
 
 1. Cloudflare dashboard → **SSL/TLS → Origin Server → Create Certificate**
-   (hostnames `farhad.bio, *.farhad.bio`).
-2. Install on the box:
-   ```
-   /etc/ssl/cloudflare/farhadbio-origin.crt   (644)
-   /etc/ssl/cloudflare/farhadbio-origin.key   (600, root only)
-   ```
-3. Re-run `provision.sh` — it detects the cert and enables the vhost.
+   (hostnames `farhad.bio, *.farhad.bio`, 15 years).
+2. Write the cert and key to the two paths above.
+3. `systemctl reload nginx`.
 
-> Let's Encrypt is not usable here: HTTP-01 needs the record un-proxied, and
-> DNS-01 needs the Cloudflare API, **which is geo-blocked from this server's
-> Iranian IP**. Mint the certificate from the dashboard or a non-Iran host.
+Nothing else changes — same paths, same vhost.
+
+> The zone is currently on SSL mode **Full**, not Full (strict). That is why a
+> mismatched certificate was accepted before this vhost existed. Once the
+> origin certificate is correct, switch the zone to **Full (strict)** so
+> Cloudflare actually verifies the origin.
 
 ---
 

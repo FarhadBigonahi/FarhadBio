@@ -9,18 +9,19 @@
 # It installs NOTHING new: the box already has node, npm, pm2 (as the `deploy`
 # user) and nginx. This script only creates directories, config and a cron job.
 #
-# TLS is NOT handled here. Install the Cloudflare Origin CA certificate at
-# /etc/ssl/cloudflare/farhadbio-origin.{crt,key} before enabling the vhost
-# (see README.md — the Cloudflare API is geo-blocked from this server, so the
-# certificate has to be minted in the dashboard or from a non-Iran host).
+# TLS is NOT handled here. Install the certificate at
+# /etc/ssl/farhadbio/api.{crt,key} before enabling the vhost — this script
+# refuses to enable a vhost whose certificate is missing, because nginx would
+# then fail to start and take the OTHER site on this box down with it.
+# See README.md for how the certificate is obtained.
 set -Eeuo pipefail
 
 APP_NAME="farhadbio-api"
 DEPLOY_USER="deploy"
 APP_ROOT="/home/${DEPLOY_USER}/apps/${APP_NAME}"
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CERT="/etc/ssl/cloudflare/farhadbio-origin.crt"
-KEY="/etc/ssl/cloudflare/farhadbio-origin.key"
+CERT="/etc/ssl/farhadbio/api.crt"
+KEY="/etc/ssl/farhadbio/api.key"
 
 log() { printf '[provision] %s\n' "$*"; }
 
@@ -110,7 +111,7 @@ if [[ -f "${CERT}" && -f "${KEY}" ]]; then
 else
   log "WARNING: ${CERT} / ${KEY} not found."
   log "         vhost is installed but NOT enabled (nginx would fail to start)."
-  log "         Install the Cloudflare Origin cert, then re-run this script."
+  log "         Install the certificate (see README.md), then re-run this script."
 fi
 
 log "done. Next: rsync a release and run server-deploy.sh <release-id>."
