@@ -26,7 +26,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const post = await getPost(slug);
   if (!post) return {};
   const url = `${site.baseUrl}/blog/${post.slug}/`;
-  const img = `${site.baseUrl}${post.coverFallback}`;
+  // Uploaded covers are already absolute (api.farhad.bio); only site-relative
+  // paths need the base URL prepended for a valid OG/Twitter image.
+  const img = /^https?:\/\//.test(post.coverFallback)
+    ? post.coverFallback
+    : `${site.baseUrl}${post.coverFallback}`;
   return {
     title: post.metaTitle,
     description: post.metaDescription,
@@ -187,7 +191,11 @@ export default async function Article({ params }: Params) {
         <div className="wb-wrap">
           <div className="wb-prose">
             {post.body.map((block, i) => renderBlock(block, i))}
+            {/* Only code posts carry a repo/package — a post without them must
+                not ship two buttons pointing at href="". */}
+            {(post.repo || post.npm) && (
             <div className="wb-actions">
+              {post.repo && (
               <a
                 className="wb-btn wb-btn--primary"
                 href={post.repo}
@@ -199,6 +207,8 @@ export default async function Article({ params }: Params) {
                 </svg>
                 <span>مشاهده در گیت‌هاب</span>
               </a>
+              )}
+              {post.npm && (
               <a
                 className="wb-btn wb-btn--ghost"
                 href={`https://www.npmjs.com/package/${post.npm}`}
@@ -210,7 +220,9 @@ export default async function Article({ params }: Params) {
                 </svg>
                 <span>پکیج npm</span>
               </a>
+              )}
             </div>
+            )}
           </div>
         </div>
       </article>
