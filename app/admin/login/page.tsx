@@ -1,11 +1,21 @@
 "use client";
-import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-function LoginForm() {
+/**
+ * `next` is read from the URL at submit time rather than via useSearchParams.
+ * That hook forces the whole subtree to bail out of server rendering, which
+ * left the login form blank until hydration — a dead screen on a slow link.
+ * The value is only ever needed on click, so nothing is lost by reading it late.
+ */
+function redirectTarget(): string {
+  const next = new URLSearchParams(window.location.search).get("next");
+  // Only same-origin admin paths; "//evil.com" is a valid pathname to a browser.
+  return next && /^\/admin(\/|$)/.test(next) ? next : "/admin";
+}
+
+export default function LoginPage() {
   const router = useRouter();
-  const params = useSearchParams();
-  const next = params.get("next") || "/admin";
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -21,7 +31,7 @@ function LoginForm() {
         body: JSON.stringify({ password }),
       });
       if (res.ok) {
-        router.replace(next.startsWith("/admin") ? next : "/admin");
+        router.replace(redirectTarget());
         router.refresh();
       } else {
         const data = await res.json().catch(() => ({}));
@@ -69,13 +79,5 @@ function LoginForm() {
         </button>
       </form>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="ad-login" />}>
-      <LoginForm />
-    </Suspense>
   );
 }
