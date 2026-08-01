@@ -60,6 +60,8 @@ export type Overview = {
   visitorsTrend: number;
   posts: number;
   avgPerVisitor: number;
+  /** Lifetime article reads, independent of the selected window. */
+  totalPostViews: number;
 };
 
 export async function getOverview(days: number): Promise<Overview> {
@@ -67,19 +69,21 @@ export async function getOverview(days: number): Promise<Overview> {
   const prevSince = since - days * DAY_MS;
 
   // Trends compare the window to the equally-sized window before it.
-  const [views, visitors, prevViews, prevVisitors, posts] = await Promise.all([
-    scalar("SELECT COUNT(*) n FROM events WHERE ts>=?", [since]),
-    scalar("SELECT COUNT(DISTINCT session) n FROM events WHERE ts>=?", [since]),
-    scalar("SELECT COUNT(*) n FROM events WHERE ts>=? AND ts<?", [
-      prevSince,
-      since,
-    ]),
-    scalar("SELECT COUNT(DISTINCT session) n FROM events WHERE ts>=? AND ts<?", [
-      prevSince,
-      since,
-    ]),
-    countPublished(),
-  ]);
+  const [views, visitors, prevViews, prevVisitors, posts, totalPostViews] =
+    await Promise.all([
+      scalar("SELECT COUNT(*) n FROM events WHERE ts>=?", [since]),
+      scalar("SELECT COUNT(DISTINCT session) n FROM events WHERE ts>=?", [since]),
+      scalar("SELECT COUNT(*) n FROM events WHERE ts>=? AND ts<?", [
+        prevSince,
+        since,
+      ]),
+      scalar(
+        "SELECT COUNT(DISTINCT session) n FROM events WHERE ts>=? AND ts<?",
+        [prevSince, since]
+      ),
+      countPublished(),
+      scalar("SELECT COALESCE(SUM(views),0) n FROM posts"),
+    ]);
 
   return {
     views,
@@ -88,6 +92,7 @@ export async function getOverview(days: number): Promise<Overview> {
     visitorsTrend: pctChange(visitors, prevVisitors),
     posts,
     avgPerVisitor: visitors ? Math.round((views / visitors) * 10) / 10 : 0,
+    totalPostViews,
   };
 }
 
@@ -167,6 +172,73 @@ export function getDevices(days: number): Promise<Ranked[]> {
   );
 }
 
+export type PostPerformance = {
+  id: number;
+  slug: string;
+  title: string;
+  emoji: string;
+  dir: "rtl" | "ltr";
+  status: "published" | "draft";
+  date: string;
+  /** Pageviews inside the selected window. */
+  views: number;
+  /** Distinct sessions inside the window. */
+  visitors: number;
+  /** Percent change against the equally-sized window before this one. */
+  trend: number;
+  /** The post row's lifetime counter — not windowed, not pruned. */
+  totalViews: number;
+};
+
+// A post's events are keyed by URL, so both spellings of its path have to be
+// counted. Written once and reused by all three subqueries below.
+const PATH_MATCH = `(e.path = '/blog/' || p.slug OR e.path = '/blog/' || p.slug || '/')`;
+
+/**
+ * Every post with its traffic — the table the dashboard ranks content by.
+ *
+ * Deliberately unbounded, unlike getTopPosts: this drives a per-post table, and
+ * a LIMIT there does not mean "the rest are unimportant", it means "the rest
+ * are reported as zero", which is a lie about the data.
+ */
+export async function getPostPerformance(
+  days: number
+): Promise<PostPerformance[]> {
+  const since = Date.now() - days * DAY_MS;
+  const prevSince = since - days * DAY_MS;
+
+  const res = await db().execute({
+    sql: `SELECT p.id, p.slug, p.title, p.emoji, p.dir, p.status, p.date,
+                 p.views total_views,
+                 (SELECT COUNT(*) FROM events e
+                   WHERE e.ts>=? AND ${PATH_MATCH}) views,
+                 (SELECT COUNT(DISTINCT e.session) FROM events e
+                   WHERE e.ts>=? AND ${PATH_MATCH}) visitors,
+                 (SELECT COUNT(*) FROM events e
+                   WHERE e.ts>=? AND e.ts<? AND ${PATH_MATCH}) prev_views
+            FROM posts p
+        ORDER BY views DESC, p.date DESC, p.id DESC`,
+    args: [since, since, prevSince, since],
+  });
+
+  return res.rows.map((r) => {
+    const views = Number(r.views ?? 0);
+    return {
+      id: Number(r.id),
+      slug: String(r.slug),
+      title: String(r.title),
+      emoji: String(r.emoji ?? ""),
+      dir: String(r.dir) === "ltr" ? ("ltr" as const) : ("rtl" as const),
+      status: String(r.status) === "draft" ? ("draft" as const) : ("published" as const),
+      date: String(r.date),
+      views,
+      visitors: Number(r.visitors ?? 0),
+      trend: pctChange(views, Number(r.prev_views ?? 0)),
+      totalViews: Number(r.total_views ?? 0),
+    };
+  });
+}
+
 export type AnalyticsBundle = {
   days: number;
   overview: Overview;
@@ -175,20 +247,38 @@ export type AnalyticsBundle = {
   sources: Ranked[];
   countries: Ranked[];
   devices: Ranked[];
+  postPerformance: PostPerformance[];
 };
 
 /** Everything the dashboard needs, in one round trip. */
 export async function getBundle(days: number): Promise<AnalyticsBundle> {
-  const [overview, timeseries, topPosts, sources, countries, devices] =
-    await Promise.all([
-      getOverview(days),
-      getTimeseries(days),
-      getTopPosts(days),
-      getTopSources(days),
-      getCountries(days),
-      getDevices(days),
-    ]);
-  return { days, overview, timeseries, topPosts, sources, countries, devices };
+  const [
+    overview,
+    timeseries,
+    topPosts,
+    sources,
+    countries,
+    devices,
+    postPerformance,
+  ] = await Promise.all([
+    getOverview(days),
+    getTimeseries(days),
+    getTopPosts(days),
+    getTopSources(days),
+    getCountries(days),
+    getDevices(days),
+    getPostPerformance(days),
+  ]);
+  return {
+    days,
+    overview,
+    timeseries,
+    topPosts,
+    sources,
+    countries,
+    devices,
+    postPerformance,
+  };
 }
 
 /** Flat CSV of raw events — the dashboard's download button. */

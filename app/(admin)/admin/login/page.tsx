@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { t } from "@/lib/admin-i18n";
 
 /**
  * `next` is read from the URL at submit time rather than via useSearchParams.
@@ -35,11 +36,11 @@ export default function LoginPage() {
         router.refresh();
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Login failed.");
+        setError(data?.error?.message || data?.error || t.login.failed);
         setBusy(false);
       }
     } catch {
-      setError("Network error.");
+      setError(t.login.networkError);
       setBusy(false);
     }
   }
@@ -50,17 +51,18 @@ export default function LoginPage() {
         <div className="ad-brand__dot" style={{ width: 44, height: 44, fontSize: 20 }}>
           F
         </div>
-        <h1>Welcome back</h1>
-        <p>Sign in to manage farhad.bio</p>
+        <h1>{t.login.welcome}</h1>
+        <p>{t.login.sub}</p>
 
         {error && <div className="ad-banner ad-banner--err">{error}</div>}
 
         <div className="ad-field">
-          <label htmlFor="pw">Password</label>
+          <label htmlFor="pw">{t.login.password}</label>
           <input
             id="pw"
             className="ad-input"
             type="password"
+            dir="ltr"
             autoFocus
             autoComplete="current-password"
             value={password}
@@ -75,7 +77,7 @@ export default function LoginPage() {
           disabled={busy || !password}
           style={{ width: "100%", justifyContent: "center", padding: 12 }}
         >
-          {busy ? "Signing in…" : "Sign in"}
+          {busy ? t.login.signingIn : t.login.signIn}
         </button>
       </form>
     </div>

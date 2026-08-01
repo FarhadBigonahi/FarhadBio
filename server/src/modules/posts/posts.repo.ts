@@ -6,7 +6,7 @@ import type { Block, Post, PostRecord } from "./posts.schema";
 
 const COLUMNS = `id,slug,status,lang,dir,emoji,title,subtitle,excerpt,meta_title,
   meta_description,cover,cover_fallback,cover_alt,cover_width,cover_height,date,
-  date_fa,date_en,reading_minutes,reading_fa,tags,repo,npm,body`;
+  date_fa,date_en,reading_minutes,reading_fa,tags,repo,npm,body,views`;
 
 function safeJson<T>(value: unknown, fallback: T): T {
   try {
@@ -44,10 +44,16 @@ function toPost(r: Row): Post {
     repo: String(r.repo),
     npm: String(r.npm),
     body: safeJson<Block[]>(r.body, []),
+    views: Number(r.views ?? 0),
   };
 }
 
-/** Values in INSERT/UPDATE column order — one array, used by both writers. */
+/**
+ * Values in INSERT/UPDATE column order — one array, used by both writers.
+ *
+ * `views` is deliberately absent: it is owned by the read counter, not by the
+ * editor, so saving a post must never write it back and reset the total.
+ */
 function toArgs(p: PostRecord) {
   return [
     p.slug,
@@ -143,6 +149,31 @@ export async function update(id: number, p: PostRecord): Promise<void> {
 
 export async function remove(id: number): Promise<void> {
   await db().execute({ sql: "DELETE FROM posts WHERE id=?", args: [id] });
+}
+
+/**
+ * Bumps a published post's lifetime view counter and returns the new total.
+ *
+ * `null` means the slug is not a published post — that is how the caller tells
+ * a real article read from a hit on /blog/typo, without a second SELECT.
+ */
+export async function incrementViews(slug: string): Promise<number | null> {
+  const res = await db().execute({
+    sql: `UPDATE posts SET views = views + 1
+           WHERE slug=? AND status='published'
+       RETURNING views`,
+    args: [slug],
+  });
+  return res.rows[0] ? Number(res.rows[0].views) : null;
+}
+
+/** Lifetime views for one published post, or null if there is no such post. */
+export async function viewsOf(slug: string): Promise<number | null> {
+  const res = await db().execute({
+    sql: "SELECT views FROM posts WHERE slug=? AND status='published' LIMIT 1",
+    args: [slug],
+  });
+  return res.rows[0] ? Number(res.rows[0].views) : null;
 }
 
 export async function countPublished(): Promise<number> {

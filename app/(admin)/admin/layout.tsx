@@ -1,15 +1,11 @@
-import type { Metadata } from "next";
 import "./admin.css";
-
-export const metadata: Metadata = {
-  title: "Dashboard — Farhad Bigonahi",
-  robots: { index: false, follow: false },
-};
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Language, direction and the noindex now live on the (admin) root layout.
+  // This wrapper only supplies the .ad styling scope.
   return <div className="ad">{children}</div>;
 }

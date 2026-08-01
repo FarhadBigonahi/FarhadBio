@@ -34,6 +34,22 @@ export function shouldRecord(path: string, ua: string): boolean {
   return true;
 }
 
+/**
+ * The post slug a pageview path points at, or "" when the path is not an
+ * article. Tolerates the trailing slash and percent-encoding a Persian slug
+ * picks up on its way through a browser.
+ */
+export function postSlugFromPath(path: string): string {
+  const m = /^\/blog\/([^/?#]+)\/?$/.exec(path);
+  if (!m) return "";
+  try {
+    return decodeURIComponent(m[1]!);
+  } catch {
+    // Malformed escape sequence — the slug cannot match a row anyway.
+    return "";
+  }
+}
+
 const SOURCE_MAP: Record<string, string> = {
   "google.com": "google",
   "t.me": "telegram",

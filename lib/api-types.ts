@@ -9,7 +9,17 @@ export type Block =
   | { type: "p"; html: string }
   | { type: "h3"; text: string }
   | { type: "code"; lang: string; code: string }
-  | { type: "callout"; html: string };
+  | { type: "callout"; html: string }
+  | { type: "quote"; html: string; cite: string }
+  | { type: "list"; ordered: boolean; items: string[] }
+  | {
+      type: "image";
+      src: string;
+      alt: string;
+      caption: string;
+      width: number;
+      height: number;
+    };
 
 export type Post = {
   id?: number;
@@ -37,6 +47,12 @@ export type Post = {
   repo: string;
   npm: string;
   body: Block[];
+  /**
+   * Lifetime reads. Server-owned — the editor never sends it, and a save must
+   * never round-trip it back. Optional so a backend that predates the counter
+   * still satisfies this contract.
+   */
+  views?: number;
 };
 
 export type Overview = {
@@ -46,11 +62,27 @@ export type Overview = {
   visitorsTrend: number;
   posts: number;
   avgPerVisitor: number;
+  totalPostViews: number;
 };
 
 export type DayPoint = { day: string; views: number; visitors: number };
 
 export type Ranked = { label: string; value: number; extra?: string };
+
+/** One row of the dashboard's per-post table. */
+export type PostPerformance = {
+  id: number;
+  slug: string;
+  title: string;
+  emoji: string;
+  dir: "rtl" | "ltr";
+  status: "published" | "draft";
+  date: string;
+  views: number;
+  visitors: number;
+  trend: number;
+  totalViews: number;
+};
 
 export type AnalyticsBundle = {
   days: number;
@@ -60,6 +92,7 @@ export type AnalyticsBundle = {
   sources: Ranked[];
   countries: Ranked[];
   devices: Ranked[];
+  postPerformance: PostPerformance[];
 };
 
 /** Every error response from the backend has this shape. */

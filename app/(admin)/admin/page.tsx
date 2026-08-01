@@ -4,6 +4,7 @@ import Link from "next/link";
 import AdminShell from "@/components/AdminShell";
 import { AreaChart, BarList, StatCard, fmt } from "@/components/AdminCharts";
 import { adminGet } from "@/lib/admin-fetch";
+import { t, faNum } from "@/lib/admin-i18n";
 import type { AnalyticsBundle } from "@/lib/api-types";
 import type { Post } from "@/lib/content";
 
@@ -24,15 +25,15 @@ export default function Overview() {
 
   return (
     <AdminShell
-      title="Overview"
-      subtitle="Traffic and content at a glance — last 30 days"
+      title={t.overview.title}
+      subtitle={t.overview.subtitle}
       actions={
         <>
           <Link className="ad-btn" href="/admin/analytics">
-            Full analytics
+            {t.overview.fullAnalytics}
           </Link>
           <Link className="ad-btn ad-btn--primary" href="/admin/posts/new">
-            <PlusIcon /> New post
+            <PlusIcon /> {t.common.newPost}
           </Link>
         </>
       }
@@ -40,10 +41,10 @@ export default function Overview() {
       <div className="ad-grid ad-stats" style={{ marginBottom: 16 }}>
         {o ? (
           <>
-            <StatCard label="Page views" value={fmt(o.views)} trend={o.viewsTrend} icon={<EyeIcon />} />
-            <StatCard label="Visitors" value={fmt(o.visitors)} trend={o.visitorsTrend} icon={<UserIcon />} />
-            <StatCard label="Views / visitor" value={String(o.avgPerVisitor)} icon={<RepeatIcon />} />
-            <StatCard label="Published posts" value={String(o.posts)} icon={<DocIcon />} />
+            <StatCard label={t.overview.views} value={fmt(o.views)} trend={o.viewsTrend} icon={<EyeIcon />} />
+            <StatCard label={t.overview.visitors} value={fmt(o.visitors)} trend={o.visitorsTrend} icon={<UserIcon />} />
+            <StatCard label={t.analytics.allTimeViews} value={fmt(o.totalPostViews)} icon={<RepeatIcon />} />
+            <StatCard label={t.overview.posts} value={faNum(o.posts)} icon={<DocIcon />} />
           </>
         ) : (
           Array.from({ length: 4 }).map((_, i) => (
@@ -58,8 +59,8 @@ export default function Overview() {
       <div className="ad-grid ad-2col" style={{ marginBottom: 16 }}>
         <div className="ad-card">
           <div className="ad-card__head">
-            <h3>Traffic</h3>
-            <span style={{ color: "var(--faint)", fontSize: 12 }}>views / day</span>
+            <h3>{t.overview.traffic}</h3>
+            <span style={{ color: "var(--faint)", fontSize: 12 }}>{t.overview.perDay}</span>
           </div>
           {data ? (
             <AreaChart data={data.timeseries} />
@@ -69,18 +70,18 @@ export default function Overview() {
         </div>
         <div className="ad-card">
           <div className="ad-card__head">
-            <h3>Top sources</h3>
+            <h3>{t.overview.topSources}</h3>
           </div>
-          <BarList items={data?.sources || []} empty="No traffic yet" />
+          <BarList items={data?.sources || []} empty={t.overview.noTraffic} />
         </div>
       </div>
 
       <div className="ad-grid ad-2col">
         <div className="ad-card">
           <div className="ad-card__head">
-            <h3>Recent posts</h3>
+            <h3>{t.overview.recentPosts}</h3>
             <Link href="/admin/posts" style={{ color: "var(--accent-2)", fontSize: 13, fontWeight: 700 }}>
-              Manage all
+              {t.overview.manageAll}
             </Link>
           </div>
           {posts ? (
@@ -96,15 +97,15 @@ export default function Overview() {
                             {p.title}
                           </span>
                         </div>
-                        <div className="ad-post-slug">/blog/{p.slug}</div>
+                        <div className="ad-post-slug ad-num" dir="ltr">/blog/{p.slug}</div>
                       </td>
                       <td style={{ width: 90 }}>
                         <span className={`ad-badge ad-badge--${p.status === "draft" ? "draft" : "pub"}`}>
-                          {p.status}
+                          {p.status === "draft" ? t.common.draft : t.common.published}
                         </span>
                       </td>
-                      <td style={{ width: 70, textAlign: "right" }}>
-                        <Link className="ad-icon-btn" href={`/admin/posts/${p.id}`} style={{ marginLeft: "auto" }}>
+                      <td style={{ width: 70, textAlign: "end" }}>
+                        <Link className="ad-icon-btn" href={`/admin/posts/${p.id}`}>
                           <EditIcon />
                         </Link>
                       </td>
@@ -113,7 +114,7 @@ export default function Overview() {
                 </tbody>
               </table>
             ) : (
-              <div className="ad-empty">No posts yet — create your first one.</div>
+              <div className="ad-empty">{t.overview.noPosts}</div>
             )
           ) : (
             <div className="ad-skel" style={{ height: 160 }} />
@@ -121,9 +122,9 @@ export default function Overview() {
         </div>
         <div className="ad-card">
           <div className="ad-card__head">
-            <h3>Top posts</h3>
+            <h3>{t.overview.topPosts}</h3>
           </div>
-          <BarList items={data?.topPosts || []} empty="No views yet" />
+          <BarList items={data?.topPosts || []} empty={t.overview.noViews} />
         </div>
       </div>
     </AdminShell>

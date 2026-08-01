@@ -28,6 +28,19 @@ export async function postsRoutes(app: FastifyInstance): Promise<void> {
     return { post };
   });
 
+  // The live read counter, split out from the post payload on purpose: the post
+  // itself is cached for minutes at three layers, and a number that changes on
+  // every request would either be stale or would drag the whole article out of
+  // the cache with it. Readers get the cached count instantly, then this
+  // refreshes it.
+  app.get("/v1/posts/:slug/views", async (req, reply) => {
+    const { slug } = slugParam.parse(req.params);
+    const views = await repo.viewsOf(slug);
+    if (views === null) throw notFound(`No published post with slug "${slug}".`);
+    reply.header("cache-control", "no-store");
+    return { views };
+  });
+
   // ----------------------------------------------------------------- admin
   app.register(async (admin) => {
     admin.addHook("preHandler", requireAdmin);

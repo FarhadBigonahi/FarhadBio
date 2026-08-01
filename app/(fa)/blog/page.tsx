@@ -1,29 +1,57 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import Image from "next/image";
 import { getAllPosts, site } from "@/lib/content";
 import { BlogNav, BlogFooter } from "@/components/BlogChrome";
 import BlogEnhancements from "@/components/BlogEnhancements";
+import BlogList from "@/components/BlogList";
+import { faNum } from "@/lib/fa";
+import {
+  DESCRIPTION_FA,
+  absoluteUrl,
+  alternates,
+  blogJsonLd,
+  blogListJsonLd,
+  breadcrumbJsonLd,
+  identity,
+  jsonLd,
+} from "@/lib/seo";
 
 const OG_IMAGE = `${site.baseUrl}/images/blog/whisp-ai-whip-cover.png`;
+const TITLE = `بلاگ ${identity.nameFa} — برنامه‌نویسی و هوش مصنوعی`;
 
 export const metadata: Metadata = {
-  title: "بلاگ | Farhad Bigonahi",
-  description: site.blogDescription,
-  alternates: { canonical: "/blog/" },
+  // Absolute, so the layout's "%s | فرهاد بیگناهی" template does not repeat the
+  // name that is already in the title.
+  title: { absolute: TITLE },
+  description: DESCRIPTION_FA,
+  keywords: [
+    "بلاگ برنامه نویسی",
+    "فرهاد بیگناهی",
+    "هوش مصنوعی",
+    "ابزارهای متن‌باز",
+    "وایب کدینگ",
+    "آموزش برنامه نویسی",
+    "سی شارپ",
+    "ASP.NET Core",
+    "React",
+    "Next.js",
+    "Farhad Bigonahi blog",
+  ],
+  alternates: alternates("/blog"),
   openGraph: {
     type: "website",
-    siteName: "Farhad Bigonahi",
+    siteName: identity.nameFa,
     locale: "fa_IR",
-    title: "بلاگ | Farhad Bigonahi",
-    description: site.blogDescription,
-    url: `${site.baseUrl}/blog/`,
-    images: [{ url: OG_IMAGE, alt: "Blog" }],
+    alternateLocale: ["en_US"],
+    title: TITLE,
+    description: DESCRIPTION_FA,
+    url: absoluteUrl("/blog"),
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: TITLE }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "بلاگ | Farhad Bigonahi",
-    description: site.blogDescription,
+    title: TITLE,
+    description: DESCRIPTION_FA,
+    creator: site.twitter,
     images: [OG_IMAGE],
   },
 };
@@ -33,6 +61,7 @@ export const revalidate = 60;
 
 export default async function BlogIndex() {
   const posts = await getAllPosts();
+  const totalReads = posts.reduce((sum, p) => sum + (p.views ?? 0), 0);
 
   return (
     <div className="wb-page wb-js" lang="fa" dir="rtl">
@@ -42,60 +71,33 @@ export default async function BlogIndex() {
         <p className="wb-eyebrow">{site.blogEyebrow}</p>
         <h1 className="wb-index__title">{site.blogTitle}</h1>
         <p className="wb-index__sub">{site.blogSubtitle}</p>
+        <p className="wb-index__stats">
+          <span>{faNum(posts.length)} نوشته</span>
+          {totalReads > 0 && (
+            <>
+              <span className="sep" />
+              <span>{faNum(totalReads)} بازدید</span>
+            </>
+          )}
+        </p>
       </header>
 
-      <main className="wb-list">
-        {posts.map((post) => (
-          <Link
-            key={post.slug}
-            className="wb-card wb-reveal"
-            href={`/blog/${post.slug}`}
-          >
-            <div className="wb-card__media">
-              <Image
-                src={post.coverFallback}
-                alt={post.coverAlt}
-                fill
-                sizes="(max-width: 640px) 100vw, 220px"
-                style={{ objectFit: "cover", objectPosition: "center top" }}
-              />
-            </div>
-            <div className="wb-card__body" dir="rtl">
-              <div className="wb-tags">
-                {post.tags.slice(0, 3).map((tag, i) => (
-                  <span
-                    key={tag}
-                    className={`wb-tag ${i === 0 ? "wb-tag--accent" : ""}`.trim()}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <h2 className="wb-card__title">
-                {post.emoji} {post.title}
-              </h2>
-              <p className="wb-card__excerpt">{post.excerpt}</p>
-              <div className="wb-card__meta">
-                <time dateTime={post.date}>{post.dateFa}</time>
-                <span
-                  className="sep"
-                  style={{
-                    width: 4,
-                    height: 4,
-                    borderRadius: "50%",
-                    background: "currentColor",
-                    opacity: 0.5,
-                  }}
-                />
-                <span>{post.readingFa}</span>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </main>
+      <BlogList posts={posts} />
 
       <BlogFooter />
       <BlogEnhancements />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLd([
+          blogJsonLd(),
+          blogListJsonLd(posts),
+          breadcrumbJsonLd([
+            { name: site.navHome, path: "/" },
+            { name: site.navBlog, path: "/blog" },
+          ]),
+        ])}
+      />
     </div>
   );
 }

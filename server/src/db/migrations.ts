@@ -67,4 +67,27 @@ export const migrations: Migration[] = [
       `CREATE INDEX IF NOT EXISTS idx_events_ts_session ON events(ts, session)`,
     ],
   },
+  {
+    id: 3,
+    name: "post_view_counter",
+    statements: [
+      // A lifetime counter ON THE POST, not derived from `events`.
+      //
+      // The events table answers "how much traffic in the last N days" and is
+      // pruned; this column answers "how many people have ever read this post"
+      // and must outlive both the pruning window and a slug rename, because it
+      // travels with the row rather than with the URL.
+      `ALTER TABLE posts ADD COLUMN views INTEGER NOT NULL DEFAULT 0`,
+      // Seed it from the traffic already on disk so an established blog does
+      // not appear to reset to zero the day this ships.
+      `UPDATE posts SET views = (
+         SELECT COUNT(*) FROM events e
+          WHERE e.path = '/blog/' || posts.slug
+             OR e.path = '/blog/' || posts.slug || '/'
+       )`,
+      // Per-post analytics filters on path AND window; idx_events_path alone
+      // makes SQLite scan every row for a busy post to apply the date range.
+      `CREATE INDEX IF NOT EXISTS idx_events_path_ts ON events(path, ts)`,
+    ],
+  },
 ];

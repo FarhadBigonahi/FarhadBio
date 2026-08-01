@@ -15,6 +15,33 @@ export const blockSchema = z.discriminatedUnion("type", [
     code: z.string().min(1),
   }),
   z.object({ type: z.literal("callout"), html: z.string().min(1) }),
+  z.object({
+    type: z.literal("quote"),
+    html: z.string().min(1),
+    // Who said it. Optional, because a pull-quote from the article itself has
+    // no attribution to give.
+    cite: z.string().trim().default(""),
+  }),
+  z.object({
+    type: z.literal("list"),
+    ordered: z.coerce.boolean().default(false),
+    // Blank rows are an artefact of typing in the editor, not content — drop
+    // them here so no post ever ships an empty <li>.
+    items: z
+      .array(z.string())
+      .transform((a) => a.map((s) => s.trim()).filter(Boolean))
+      .refine((a) => a.length > 0, "a list needs at least one item"),
+  }),
+  z.object({
+    type: z.literal("image"),
+    src: z.string().min(1),
+    // Defaulted rather than required: an alt-less image is an accessibility
+    // problem the editor flags, not a reason to reject the whole save.
+    alt: z.string().default(""),
+    caption: z.string().default(""),
+    width: z.coerce.number().int().positive().default(1200),
+    height: z.coerce.number().int().positive().default(800),
+  }),
 ]);
 
 export type Block = z.infer<typeof blockSchema>;
@@ -102,17 +129,23 @@ export type PostRecord = {
   body: Block[];
 };
 
-/** Public post shape = the record plus its database identity. */
-export type Post = PostRecord & { id: number };
+/**
+ * Public post shape = the record, plus the two fields the editor never sends:
+ * the database identity and the read counter.
+ */
+export type Post = PostRecord & { id: number; views: number };
 
 const WORDS_PER_MINUTE = 200;
 
 function wordCount(body: Block[], title: string): number {
   let text = title;
   for (const b of body) {
-    if (b.type === "p" || b.type === "callout") text += " " + stripHtml(b.html);
-    else if (b.type === "h3") text += " " + b.text;
+    if (b.type === "p" || b.type === "callout" || b.type === "quote") {
+      text += " " + stripHtml(b.html);
+    } else if (b.type === "h3") text += " " + b.text;
     else if (b.type === "code") text += " " + b.code;
+    else if (b.type === "list") text += " " + b.items.join(" ");
+    else if (b.type === "image") text += " " + b.caption;
   }
   return text.trim().split(/\s+/).filter(Boolean).length;
 }

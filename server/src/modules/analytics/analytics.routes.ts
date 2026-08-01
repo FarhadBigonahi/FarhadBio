@@ -3,7 +3,13 @@ import { z } from "zod";
 import { config } from "../../config";
 import { requireAdmin } from "../../plugins/require-admin";
 import * as repo from "./analytics.repo";
-import { deviceFromUA, shouldRecord, sourceFromReferrer } from "./analytics.service";
+import * as postsRepo from "../posts/posts.repo";
+import {
+  deviceFromUA,
+  postSlugFromPath,
+  shouldRecord,
+  sourceFromReferrer,
+} from "./analytics.service";
 
 /** Windows longer than a year are rejected rather than silently clamped-down. */
 const daysQuery = z.object({
@@ -51,6 +57,13 @@ export async function analyticsRoutes(app: FastifyInstance): Promise<void> {
           country: String(req.headers["cf-ipcountry"] ?? "").slice(0, 2),
           device: deviceFromUA(ua),
         });
+
+        // Same beacon, second effect: bump the article's lifetime counter. It
+        // is a separate number from the event row because events get pruned and
+        // are keyed by URL, while this one travels with the post row and so
+        // survives both retention and a slug rename.
+        const slug = postSlugFromPath(path);
+        if (slug) await postsRepo.incrementViews(slug);
       } catch (err) {
         // Analytics must never surface as an error to a reader's browser.
         req.log.error({ err }, "failed to record event");
