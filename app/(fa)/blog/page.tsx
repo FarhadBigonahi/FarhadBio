@@ -61,7 +61,6 @@ export const revalidate = 60;
 
 export default async function BlogIndex() {
   const posts = await getAllPosts();
-  const totalReads = posts.reduce((sum, p) => sum + (p.views ?? 0), 0);
 
   return (
     <div className="wb-page wb-js" lang="fa" dir="rtl">
@@ -71,14 +70,10 @@ export default async function BlogIndex() {
         <p className="wb-eyebrow">{site.blogEyebrow}</p>
         <h1 className="wb-index__title">{site.blogTitle}</h1>
         <p className="wb-index__sub">{site.blogSubtitle}</p>
+        {/* Read counts are deliberately not shown to readers — they are an
+            author-facing metric and live on the /admin dashboard only. */}
         <p className="wb-index__stats">
           <span>{faNum(posts.length)} نوشته</span>
-          {totalReads > 0 && (
-            <>
-              <span className="sep" />
-              <span>{faNum(totalReads)} بازدید</span>
-            </>
-          )}
         </p>
       </header>
 

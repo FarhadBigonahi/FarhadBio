@@ -363,17 +363,8 @@ export function blogPostingJsonLd(post: Post) {
     wordCount: wordCount(post),
     timeRequired: `PT${Math.max(1, post.readingMinutes)}M`,
     isAccessibleForFree: true,
-    // Read count as a first-class engagement signal. Omitted entirely at zero:
-    // declaring "0 reads" on a new post is worse than declaring nothing.
-    ...(post.views
-      ? {
-          interactionStatistic: {
-            "@type": "InteractionCounter",
-            interactionType: "https://schema.org/ReadAction",
-            userInteractionCount: post.views,
-          },
-        }
-      : {}),
+    // No interactionStatistic: read counts are author-facing only, and putting
+    // them in JSON-LD would publish the very number the page hides.
   };
 }
 

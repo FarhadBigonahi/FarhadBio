@@ -9,7 +9,6 @@ import BlogEnhancements from "@/components/BlogEnhancements";
 import ReadingProgress from "@/components/ReadingProgress";
 import PostToc, { type TocItem } from "@/components/PostToc";
 import PostShare from "@/components/PostShare";
-import ViewCount from "@/components/ViewCount";
 import {
   absoluteUrl,
   alternates,
@@ -327,8 +326,6 @@ export default async function Article({ params }: Params) {
                 <time dateTime={post.date}>{post.dateFa}</time>
                 <span className="sep" />
                 <span>{post.readingFa}</span>
-                <span className="sep" />
-                <ViewCount slug={post.slug} initial={post.views ?? 0} />
               </div>
             </div>
             <figure className="wb-hero__media">

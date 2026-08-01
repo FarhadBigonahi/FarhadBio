@@ -153,18 +153,6 @@ export default function BlogList({ posts }: { posts: Post[] }) {
                 <time dateTime={post.date}>{post.dateFa}</time>
                 <span className="sep" />
                 <span>{post.readingFa}</span>
-                {typeof post.views === "number" && post.views > 0 && (
-                  <>
-                    <span className="sep" />
-                    <span className="wb-views">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
-                        <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                      {faNum(post.views)}
-                    </span>
-                  </>
-                )}
               </div>
             </div>
           </Link>
