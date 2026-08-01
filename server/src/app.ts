@@ -10,6 +10,7 @@ import { healthRoutes } from "./modules/health/health.routes";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { postsRoutes } from "./modules/posts/posts.routes";
 import { analyticsRoutes } from "./modules/analytics/analytics.routes";
+import { uploadsRoutes } from "./modules/uploads/uploads.routes";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -124,6 +125,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(authRoutes);
   await app.register(postsRoutes);
   await app.register(analyticsRoutes);
+  await app.register(uploadsRoutes);
 
   return app;
 }

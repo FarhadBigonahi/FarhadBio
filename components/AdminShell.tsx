@@ -3,25 +3,26 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { t } from "@/lib/admin-i18n";
 
 const NAV = [
   {
     href: "/admin",
-    label: "Overview",
+    label: t.nav.overview,
     icon: (
       <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z" />
     ),
   },
   {
     href: "/admin/posts",
-    label: "Posts",
+    label: t.nav.posts,
     icon: (
       <path d="M4 4h16v4H4V4Zm0 6h16v2H4v-2Zm0 4h10v2H4v-2Zm0 4h10v2H4v-2Z" />
     ),
   },
   {
     href: "/admin/analytics",
-    label: "Analytics",
+    label: t.nav.analytics,
     icon: <path d="M4 20V10m6 10V4m6 16v-7m4 7H2" />,
   },
 ];
@@ -57,8 +58,8 @@ export default function AdminShell({
         <div className="ad-brand">
           <div className="ad-brand__dot">F</div>
           <div>
-            <div className="ad-brand__name">Farhad.bio</div>
-            <div className="ad-brand__sub">Control panel</div>
+            <div className="ad-brand__name ad-num">{t.brand.name}</div>
+            <div className="ad-brand__sub">{t.brand.sub}</div>
           </div>
         </div>
 
@@ -89,13 +90,13 @@ export default function AdminShell({
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3" />
             </svg>
-            <span>View site</span>
+            <span>{t.nav.viewSite}</span>
           </Link>
           <button className="ad-logout" onClick={logout}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
             </svg>
-            <span>Log out</span>
+            <span>{t.nav.logout}</span>
           </button>
         </div>
       </aside>

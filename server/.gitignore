@@ -1,6 +1,9 @@
 node_modules/
 dist/
 data/
+# Next.js drops a telemetry trace here if a next command runs with this as cwd.
+# Nothing in server/ is a Next app; the directory is always an artifact.
+.next/
 *.db
 *.db-shm
 *.db-wal

@@ -67,7 +67,15 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0, filter: "blur(0px)", scale: 1 }}
           transition={{ duration: 1, ease: EASE, delay: 0.28 }}
         >
-          Farhad<span className="reg">®</span>
+          <span aria-hidden="true">
+            Farhad<span className="reg">®</span>
+          </span>
+          {/* The wordmark is the design; this is the page's actual heading.
+              Without it the only <h1> on the site reads "Farhad®" — no name, no
+              role — to a crawler and to a screen reader alike. */}
+          <span className="sr-only">
+            Farhad Bigonahi — Full-Stack Developer &amp; AI Builder
+          </span>
         </motion.h1>
 
         <motion.div

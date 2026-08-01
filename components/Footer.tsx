@@ -70,6 +70,12 @@ export default function Footer() {
 
       <Reveal as="div" className="footer__meta" delay={80}>
         <span>Farhad Bigonahi &mdash; Full-Stack Developer &amp; AI Builder</span>
+        {/* The homepage is the strongest page on the domain, and it carried no
+            Persian text at all — so it had nothing to match a search for his
+            name in Persian script. This is the same byline, his own name. */}
+        <span lang="fa" dir="rtl">
+          فرهاد بیگناهی &mdash; توسعه‌دهنده فول‌استک
+        </span>
         <span>&copy; 2026 Farhad Bigonahi. All rights reserved.</span>
       </Reveal>
 

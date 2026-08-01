@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import type { DayPoint, Ranked } from "@/lib/api-types";
+import { faCompact, faDigits } from "@/lib/admin-i18n";
 
+/** Persian compact number — kept named `fmt` for the pages that already call it. */
 export function fmt(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "k";
-  return String(n);
+  return faCompact(n);
 }
 
 export function Trend({ value }: { value: number }) {
@@ -12,7 +12,7 @@ export function Trend({ value }: { value: number }) {
   const arrow = value > 0 ? "▲" : value < 0 ? "▼" : "—";
   return (
     <span className={`ad-trend ad-trend--${dir}`}>
-      {arrow} {Math.abs(value)}%
+      {arrow} {faDigits(Math.abs(value))}٪
     </span>
   );
 }
@@ -91,7 +91,7 @@ export function AreaChart({ data }: { data: DayPoint[] }) {
       {data.map((d, i) =>
         i % labelEvery === 0 ? (
           <text key={i} className="ad-axis" x={x(i)} y={H - 6} textAnchor="middle">
-            {d.day.slice(5)}
+            {faDigits(d.day.slice(5))}
           </text>
         ) : null
       )}
@@ -115,8 +115,8 @@ export function BarList({
       {items.map((it, i) => (
         <div className="ad-bar" key={i}>
           <span className="ad-bar__fill" style={{ width: `${(it.value / max) * 100}%` }} />
-          <span className="ad-bar__label">{it.extra || it.label}</span>
-          <span className="ad-bar__val">{format(it.value)}</span>
+          <span className="ad-bar__label" dir="auto">{it.extra || it.label}</span>
+          <span className="ad-bar__val ad-num">{format(it.value)}</span>
         </div>
       ))}
     </div>
