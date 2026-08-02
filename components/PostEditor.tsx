@@ -663,12 +663,21 @@ function loadImage(file: File): Promise<HTMLImageElement> {
   });
 }
 
+// What the backend will store if the slug field is left blank. Mirrors
+// `slugify` in server/src/lib/text.ts exactly, word-boundary cap included —
+// this is a promise to the author about the URL their post will live at.
 function slugPreview(s: string): string {
-  return s
+  const slug = s
     .trim()
     .toLowerCase()
     .replace(/['"]/g, "")
     .replace(/[^\p{L}\p{N}]+/gu, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
+    .replace(/^-+|-+$/g, "");
+  if (slug.length <= 80) return slug;
+  const cut = slug.slice(0, 81);
+  const lastBreak = cut.lastIndexOf("-");
+  return (lastBreak > 0 ? cut.slice(0, lastBreak) : cut.slice(0, 80)).replace(
+    /-+$/,
+    ""
+  );
 }

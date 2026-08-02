@@ -9,7 +9,7 @@ import Certification from "@/components/Certification";
 import LatestPosts from "@/components/LatestPosts";
 import Cta from "@/components/Cta";
 import Footer from "@/components/Footer";
-import { jsonLd, personJsonLd, webSiteJsonLd } from "@/lib/seo";
+import { jsonLd, personJsonLd, profilePageJsonLd, webSiteJsonLd } from "@/lib/seo";
 
 // The Latest Insights section reads posts, so the homepage revalidates on the
 // same cadence as the blog — a new post appears here without a redeploy.
@@ -33,7 +33,11 @@ export default function Home() {
       <Footer />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={jsonLd([personJsonLd(), webSiteJsonLd()])}
+        dangerouslySetInnerHTML={jsonLd([
+          personJsonLd(),
+          webSiteJsonLd(),
+          profilePageJsonLd(),
+        ])}
       />
     </>
   );

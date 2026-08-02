@@ -60,11 +60,27 @@ export function decodeParam(value: string): string {
  * computed here matches one the backend stored.
  */
 export function slugifyFa(input: string): string {
-  return normalizeFa(input)
-    .replace(/['"]/g, "")
-    .replace(/[^\p{L}\p{N}]+/gu, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
+  return truncateSlug(
+    normalizeFa(input)
+      .replace(/['"]/g, "")
+      .replace(/[^\p{L}\p{N}]+/gu, "-")
+      .replace(/^-+|-+$/g, "")
+  );
+}
+
+/** The length cap, mirroring MAX_SLUG in server/src/lib/text.ts. */
+const MAX_SLUG = 80;
+
+/**
+ * Cuts a slug to the cap on a word boundary — the same rule the backend applies
+ * when it stores one, so a slug computed here still matches the slug on the row.
+ */
+function truncateSlug(slug: string): string {
+  if (slug.length <= MAX_SLUG) return slug;
+  const cut = slug.slice(0, MAX_SLUG + 1);
+  const lastBreak = cut.lastIndexOf("-");
+  const kept = lastBreak > 0 ? cut.slice(0, lastBreak) : cut.slice(0, MAX_SLUG);
+  return kept.replace(/-+$/, "");
 }
 
 /**
@@ -114,20 +130,27 @@ export function postsForTag(posts: Post[], slug: string): Post[] {
 }
 
 /**
- * The post a Persian-script URL is asking for.
+ * How many posts a topic needs before its archive is worth indexing.
  *
- * Post slugs are canonically ASCII — they stay short, survive being pasted into
- * Telegram, and keep the equity of every link already pointing at them. But a
- * Persian title makes a Persian URL the natural guess, and someone who types or
- * hand-writes one should land on the article rather than a 404. Matching the
- * title through the same slugifier means no alias table has to be maintained.
+ * An archive holding one post is not a topic page, it is a second copy of that
+ * post's title and cover under a different URL — and shipping nine of them for
+ * three articles asks Google to choose between an article and a thinner page
+ * about the same thing. Two is the point where the page starts saying something
+ * the article does not: that there is more than one of these.
  */
-export function findByTitleSlug(posts: Post[], slug: string): Post | undefined {
-  const wanted = slugifyFa(slug);
-  if (!wanted) return undefined;
-  return posts.find(
-    (p) => slugifyFa(p.title) === wanted || slugifyFa(p.subtitle) === wanted
-  );
+export const MIN_INDEXABLE_TAG_POSTS = 2;
+
+/**
+ * Whether a tag archive should be indexed.
+ *
+ * Below the threshold the page still renders, is still linked, and is still
+ * crawlable — it just carries `noindex, follow`, so the crawl path to the post
+ * survives while the near-duplicate stays out of the index. The archives start
+ * indexing themselves as soon as a topic earns a second post; nothing has to be
+ * revisited.
+ */
+export function isIndexableTag(postCount: number): boolean {
+  return postCount >= MIN_INDEXABLE_TAG_POSTS;
 }
 
 /** The display label for a tag slug, or undefined if nothing carries it. */

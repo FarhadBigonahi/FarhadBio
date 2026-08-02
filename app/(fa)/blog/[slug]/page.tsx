@@ -4,7 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound, permanentRedirect } from "next/navigation";
 import { getAllPostsSafe, getPost, site, type Block, type Post } from "@/lib/content";
-import { decodeParam, findByTitleSlug, postKeywords, tagPath } from "@/lib/topics";
+import { decodeParam, postKeywords, tagPath } from "@/lib/topics";
+import { findByTitleSlug, retiredSlugTarget } from "@/lib/slugs";
 import { BlogNav, BlogFooter } from "@/components/BlogChrome";
 import BlogEnhancements from "@/components/BlogEnhancements";
 import ReadingProgress from "@/components/ReadingProgress";
@@ -17,8 +18,10 @@ import {
   breadcrumbJsonLd,
   identity,
   jsonLd,
+  modifiedDate,
   postPath,
   postTitle,
+  twitterCreator,
 } from "@/lib/seo";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -37,10 +40,12 @@ export async function generateStaticParams() {
 /**
  * The post behind a URL segment.
  *
- * Post slugs are canonically ASCII. A Persian-script URL built from the title
- * is the natural thing for a reader to type or hand-write, so rather than
- * answering it with a 404 we send a 301 to the canonical URL: the Persian form
- * works, and exactly one URL is ever indexed.
+ * Post slugs are the article's Persian title, so the canonical URL carries the
+ * words people actually search — Google renders the path decoded, and the query
+ * terms show in the result's URL line. Two kinds of URL are answered with a 301
+ * rather than a 404: the ASCII slugs these posts were first published under
+ * (lib/slugs.ts), and any other form of the title. Either way exactly one URL
+ * is ever indexed, and no inbound link that already exists is broken.
  */
 async function loadPost(param: string): Promise<Post> {
   const slug = decodeParam(param);
@@ -48,11 +53,36 @@ async function loadPost(param: string): Promise<Post> {
   // hostile URL, and forwarding it earns a 414 that would surface as a 500.
   if (slug.length > 200) notFound();
 
+  // A retired slug only redirects once its replacement actually exists.
+  //
+  // Redirecting unconditionally couples this deploy to a database rename that
+  // ships separately, and gets it exactly backwards while the two are out of
+  // step: the old URL 301s to a slug the backend does not have, the lookup
+  // below misses, findByTitleSlug matches the article by its title and 301s
+  // straight back to the old URL — an infinite redirect on every published
+  // post. Confirming the target first makes the order irrelevant: before the
+  // rename this serves the post where it still lives, after it the 301 fires.
+  //
+  // The check reads the cached post list rather than fetching the target,
+  // because that list never throws on an outage and is needed below anyway —
+  // so a downed backend still costs one request, not two, and still degrades
+  // to a 404 rather than a 500.
+  const moved = retiredSlugTarget(slug);
+  if (moved) {
+    const all = await getAllPostsSafe();
+    if (all.some((p) => p.slug === moved)) permanentRedirect(postPath(moved));
+  }
+
   const post = await getPost(slug);
   if (post) return post;
 
   const alias = findByTitleSlug(await getAllPostsSafe(), slug);
-  if (alias) permanentRedirect(postPath(alias.slug));
+  // Never bounce to a slug that is itself retired: if the rename has landed but
+  // this alias lookup matched the pre-rename article, redirecting there would
+  // start the same loop from the other end.
+  if (alias && !retiredSlugTarget(alias.slug)) {
+    permanentRedirect(postPath(alias.slug));
+  }
   notFound();
 }
 
@@ -83,7 +113,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       description: post.metaDescription,
       url,
       publishedTime: post.date,
-      modifiedTime: post.date,
+      // Same freshness signal the JSON-LD carries; they must not disagree.
+      modifiedTime: modifiedDate(post),
       authors: [`${site.baseUrl}/`],
       section: post.tags[0],
       tags: post.tags,
@@ -100,7 +131,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       card: "summary_large_image",
       title,
       description: post.metaDescription,
-      creator: site.twitter,
+      ...twitterCreator(),
       images: [img],
     },
     authors: [{ name: authorName, url: `${site.baseUrl}/` }],

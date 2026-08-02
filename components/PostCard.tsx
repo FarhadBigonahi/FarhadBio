@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Post } from "@/lib/content";
+import { postPath } from "@/lib/slugs";
 
 // One card in a post list.
 //
@@ -21,7 +22,7 @@ export default function PostCard({
   return (
     <Link
       className={`wb-card${reveal ? " wb-reveal" : ""}`}
-      href={`/blog/${post.slug}`}
+      href={postPath(post.slug)}
     >
       <div className="wb-card__media">
         <Image

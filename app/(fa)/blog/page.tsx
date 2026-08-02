@@ -15,6 +15,7 @@ import {
   breadcrumbJsonLd,
   identity,
   jsonLd,
+  twitterCreator,
 } from "@/lib/seo";
 
 const TITLE = `بلاگ ${identity.nameFa} — برنامه‌نویسی و هوش مصنوعی`;
@@ -76,7 +77,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: TITLE,
       description: DESCRIPTION_FA,
-      creator: site.twitter,
+      ...twitterCreator(),
       ...(image ? { images: [image.url] } : {}),
     },
   };

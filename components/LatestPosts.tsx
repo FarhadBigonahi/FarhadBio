@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Reveal from "./Reveal";
 import { getAllPostsSafe, site } from "@/lib/content";
+import { postPath } from "@/lib/slugs";
 
 // Latest blog posts on the English homepage.
 //
@@ -31,7 +32,7 @@ export default async function LatestPosts() {
         <div className="insights__grid">
           {posts.map((post, i) => (
             <Reveal key={post.slug} delay={100 + i * 70}>
-              <Link className="insight" href={`/blog/${post.slug}`}>
+              <Link className="insight" href={postPath(post.slug)}>
                 <span className="insight__media">
                   <Image
                     src={post.coverFallback}

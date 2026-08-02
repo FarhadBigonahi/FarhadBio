@@ -53,6 +53,15 @@ export type Post = {
    * still satisfies this contract.
    */
   views?: number;
+  /**
+   * When the post was last saved, ISO-8601. Server-owned like `views`, and
+   * optional for the same reason: a backend that predates the field still
+   * satisfies this contract, and callers fall back to `date`.
+   *
+   * `date` is the publication day and never moves; this is what a search engine
+   * reads as `dateModified`, so an edited article stops looking abandoned.
+   */
+  updatedAt?: string;
 };
 
 export type Overview = {

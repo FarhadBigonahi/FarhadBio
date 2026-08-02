@@ -14,6 +14,32 @@ import {
 
 export const revalidate = 300;
 
+/**
+ * The MIME type of a cover, from its extension.
+ *
+ * This was hardcoded to image/png, which is wrong for every .webp and .jpg
+ * cover in the archive — and an enclosure whose declared type does not match
+ * its bytes is exactly what makes a feed reader refuse to render the image.
+ */
+function imageType(url: string): string {
+  const ext = url.split("?")[0].split("#")[0].split(".").pop()?.toLowerCase();
+  switch (ext) {
+    case "webp":
+      return "image/webp";
+    case "jpg":
+    case "jpeg":
+      return "image/jpeg";
+    case "avif":
+      return "image/avif";
+    case "gif":
+      return "image/gif";
+    case "svg":
+      return "image/svg+xml";
+    default:
+      return "image/png";
+  }
+}
+
 /** Escapes the five characters that are not legal as raw text in XML. */
 function xml(value: string): string {
   return value
@@ -44,7 +70,7 @@ export async function GET(): Promise<Response> {
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
       <description>${xml(post.excerpt || post.metaDescription)}</description>
       <dc:creator>${xml(identity.nameFa)}</dc:creator>
-      <enclosure url="${xml(cover)}" type="image/png" length="0" />
+      <enclosure url="${xml(cover)}" type="${imageType(cover)}" length="0" />
 ${post.tags.map((t) => `      <category>${xml(t)}</category>`).join("\n")}
     </item>`;
     })

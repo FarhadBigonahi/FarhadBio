@@ -19,7 +19,7 @@ export const site = {
   authorUrl: "https://farhad.bio/",
   authorImage: "/images/apple-touch-icon.png",
   locale: "fa_IR",
-  twitter: "@its.farhad.bio",
+  // No `twitter` handle here on purpose — see twitterCreator() in lib/seo.ts.
   sectionHeading: "Latest Insights",
   sectionSubtitle: "Notes on building, AI and open-source tools.",
   viewAllLabel: "View all posts",

@@ -4,6 +4,7 @@
 import type { Metadata } from "next";
 import type { Post } from "./content";
 import { site } from "./content";
+import { postPath } from "./slugs";
 import { postKeywords, tagPath } from "./topics";
 
 /* ------------------------------------------------------------------ */
@@ -54,13 +55,67 @@ export function absoluteUrl(path: string): string {
   return `${site.baseUrl}${canonicalPath(path)}`;
 }
 
-export const postPath = (slug: string) => `/blog/${slug}`;
+// Defined in lib/slugs.ts so client bundles can import it without dragging
+// `server-only` in through this file. Re-exported here because this is where
+// every other canonical-URL helper lives.
+export { postPath };
 
 export { tagPath } from "./topics";
 
 /* ------------------------------------------------------------------ */
+/* Freshness                                                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * When a post last changed, as an ISO-8601 string.
+ *
+ * `post.date` is the publication day and is never revised, so using it for both
+ * `datePublished` and `dateModified` told every crawler that an article edited
+ * this morning had not been touched since the day it went up. The backend now
+ * reports the row's last save as `updatedAt`; this is the one place that decides
+ * which of the two wins.
+ *
+ * The result is clamped to be no earlier than the publication date. A post can
+ * be backdated in the editor, and a `dateModified` that precedes
+ * `datePublished` is invalid structured data that Google discards outright —
+ * taking the publication date back with it.
+ */
+export function modifiedDate(post: Post): string {
+  const published = post.date;
+  const updated = post.updatedAt;
+  if (!updated) return published;
+
+  const updatedMs = Date.parse(updated);
+  const publishedMs = Date.parse(published);
+  if (Number.isNaN(updatedMs)) return published;
+  // NaN here means the publication date is unparseable, in which case there is
+  // nothing to clamp against and the save time is the better of the two.
+  if (!Number.isNaN(publishedMs) && updatedMs < publishedMs) return published;
+  return updated;
+}
+
+/* ------------------------------------------------------------------ */
 /* Shared metadata defaults                                            */
 /* ------------------------------------------------------------------ */
+
+/**
+ * Search-console ownership tokens, read from the environment.
+ *
+ * These are the meta tags Google and Bing look for when you claim a property.
+ * They live in env rather than in source because they are per-property strings
+ * that mean nothing to anyone forking this repo, and because a token can be
+ * rotated without a code change. Nothing is emitted for a variable that is
+ * unset, so the tags never appear as empty attributes.
+ */
+function verification(): Metadata["verification"] {
+  const google = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+  const bing = process.env.BING_SITE_VERIFICATION?.trim();
+  if (!google && !bing) return undefined;
+  return {
+    ...(google ? { google } : {}),
+    ...(bing ? { other: { "msvalidate.01": bing } } : {}),
+  };
+}
 
 /**
  * The metadata every root layout shares: resolution base, icons and the feed
@@ -101,6 +156,7 @@ export const sharedMetadata: Metadata = {
     },
   },
   alternates: alternates(),
+  verification: verification(),
 };
 
 /**
@@ -124,6 +180,21 @@ export function alternates(path?: string): NonNullable<Metadata["alternates"]> {
       ],
     },
   };
+}
+
+/**
+ * The `twitter:creator` fragment, or nothing at all.
+ *
+ * This used to be "@its.farhad.bio", which is an Instagram handle. An X
+ * username is letters, digits and underscores only and caps at 15 characters,
+ * so that tag named an account that cannot exist — every card on the site was
+ * attributed to nobody, on all four page types. There is no X account today; if
+ * one ever exists, putting it here is the only change needed.
+ */
+const TWITTER_CREATOR = "";
+
+export function twitterCreator(): { creator?: string } {
+  return TWITTER_CREATOR ? { creator: TWITTER_CREATOR } : {};
 }
 
 /* ------------------------------------------------------------------ */
@@ -238,6 +309,37 @@ export function webSiteJsonLd() {
     description: DESCRIPTION,
     inLanguage: ["en", "fa-IR"],
     publisher: { "@id": PERSON_ID },
+  };
+}
+
+/**
+ * ProfilePage for the homepage.
+ *
+ * The homepage emitted a Person and a WebSite but nothing that described the
+ * *page* — so the two nodes floated with no document to anchor them, and the
+ * one URL on the site that is literally a personal profile was not typed as
+ * one. ProfilePage is the type Google documents for exactly this, and it is
+ * what lets the Person be understood as the subject of the page rather than as
+ * something merely mentioned on it.
+ *
+ * `mainEntity` references the Person by @id, which is valid here because the
+ * full Person node ships in the same <script> block (see app/(site)/page.tsx).
+ */
+export function profilePageJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "@id": `${site.baseUrl}/#webpage`,
+    url: `${site.baseUrl}/`,
+    name: `${identity.name} — ${identity.jobTitle}`,
+    description: DESCRIPTION,
+    inLanguage: "en",
+    isPartOf: { "@id": SITE_ID },
+    about: { "@id": PERSON_ID },
+    mainEntity: { "@id": PERSON_ID },
+    // The blog is the site's other half and its only regularly-updated surface.
+    // Naming it here gives the profile an explicit, typed edge to the archive.
+    hasPart: { "@id": `${site.baseUrl}/blog#blog` },
   };
 }
 
@@ -402,7 +504,7 @@ export function blogPostingJsonLd(post: Post) {
       height: post.coverHeight,
     },
     datePublished: post.date,
-    dateModified: post.date,
+    dateModified: modifiedDate(post),
     inLanguage: post.lang === "fa" ? "fa-IR" : post.lang,
     isPartOf: { "@id": `${site.baseUrl}/blog#blog` },
     author: personNode(post.lang === "fa" ? "fa" : "en"),

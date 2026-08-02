@@ -7,6 +7,7 @@ import { adminGet, adminRequest } from "@/lib/admin-fetch";
 import { t, faNum } from "@/lib/admin-i18n";
 import type { AnalyticsBundle, PostPerformance } from "@/lib/api-types";
 import type { Post } from "@/lib/content";
+import { postPath } from "@/lib/slugs";
 
 type StatusFilter = "all" | "published" | "draft";
 type SortKey = "newest" | "oldest" | "views" | "total" | "title";
@@ -155,8 +156,11 @@ export default function PostsPage() {
 
   async function copyLink(p: Post) {
     try {
+      // Encoded, not raw: a Persian slug pasted into Telegram or an email has
+      // to survive as a URL, and half the clients that autolink it will not
+      // encode it for you.
       await navigator.clipboard.writeText(
-        `${window.location.origin}/blog/${p.slug}`
+        `${window.location.origin}${postPath(p.slug)}`
       );
       flash("ok", t.common.copied);
     } catch {
@@ -317,7 +321,7 @@ export default function PostsPage() {
                     <td>
                       <div className="ad-row-actions">
                         {!draft && (
-                          <a className="ad-icon-btn" href={`/blog/${p.slug}`} target="_blank" title={t.common.viewLive}>
+                          <a className="ad-icon-btn" href={postPath(p.slug)} target="_blank" title={t.common.viewLive}>
                             <ExtIcon />
                           </a>
                         )}

@@ -3,13 +3,13 @@ import "../globals.css";
 import "../skills-certs.css";
 import Beacon from "@/components/Beacon";
 import { fontVars } from "../fonts";
-import { site } from "@/lib/content";
 import {
   DESCRIPTION,
   absoluteUrl,
   alternates,
   identity,
   sharedMetadata,
+  twitterCreator,
 } from "@/lib/seo";
 
 // Root layout for the English marketing site. The Persian blog and the admin
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
-    creator: site.twitter,
+    ...twitterCreator(),
     images: [OG_IMAGE],
   },
 };

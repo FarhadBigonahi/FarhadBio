@@ -9,6 +9,7 @@ import { faNum } from "@/lib/fa";
 import {
   allTags,
   decodeParam,
+  isIndexableTag,
   postsForTag,
   tagKeywords,
   tagLabel,
@@ -25,6 +26,7 @@ import {
   tagCollectionJsonLd,
   tagDescription,
   tagTitle,
+  twitterCreator,
 } from "@/lib/seo";
 
 // Tag archives — the site's Persian keyword landing pages.
@@ -77,6 +79,13 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     description,
     keywords: tagKeywords(found.label),
     alternates: alternates(tagPath(found.label)),
+    // A one-post archive is a near-duplicate of the post it lists, and asking
+    // Google to rank it against the article helps neither. `follow` keeps the
+    // crawl path through to the post; the page indexes itself the moment the
+    // topic earns a second article. See isIndexableTag in lib/topics.ts.
+    ...(isIndexableTag(found.posts.length)
+      ? {}
+      : { robots: { index: false, follow: true } }),
     openGraph: {
       type: "website",
       siteName: identity.nameFa,
@@ -90,7 +99,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       card: image ? "summary_large_image" : "summary",
       title,
       description,
-      creator: site.twitter,
+      ...twitterCreator(),
       ...(image ? { images: [image] } : {}),
     },
   };
