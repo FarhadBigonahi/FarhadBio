@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getAllPostsSafe } from "@/lib/content";
 import { absoluteUrl, postPath } from "@/lib/seo";
+import { allTags, postsForTag, tagPath, tagSlug } from "@/lib/topics";
 
 export const revalidate = 60;
 
@@ -33,6 +34,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .reduce((a, b) => Math.max(a, b), 0);
   const blogModified = newestPost ? new Date(newestPost) : new Date();
 
+  // Tag archives. Each is a Persian keyword landing page, and each is only as
+  // fresh as its newest post — a shared date would tell crawlers that a topic
+  // nobody has written about in months was updated today.
+  const tagEntries: MetadataRoute.Sitemap = allTags(posts).map(({ tag }) => {
+    const tagged = postsForTag(posts, tagSlug(tag));
+    const newest = tagged
+      .map((p) => (p.date ? new Date(p.date).getTime() : 0))
+      .reduce((a, b) => Math.max(a, b), 0);
+    return {
+      url: absoluteUrl(tagPath(tag)),
+      lastModified: newest ? new Date(newest) : blogModified,
+      changeFrequency: "weekly",
+      // Below the index and the posts themselves: these exist to be found, not
+      // to outrank the articles they point at.
+      priority: 0.5,
+    };
+  });
+
   return [
     {
       url: absoluteUrl("/"),
@@ -47,5 +66,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     ...postEntries,
+    ...tagEntries,
   ];
 }

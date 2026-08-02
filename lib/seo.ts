@@ -4,6 +4,7 @@
 import type { Metadata } from "next";
 import type { Post } from "./content";
 import { site } from "./content";
+import { postKeywords, tagPath } from "./topics";
 
 /* ------------------------------------------------------------------ */
 /* Identity                                                            */
@@ -54,6 +55,8 @@ export function absoluteUrl(path: string): string {
 }
 
 export const postPath = (slug: string) => `/blog/${slug}`;
+
+export { tagPath } from "./topics";
 
 /* ------------------------------------------------------------------ */
 /* Shared metadata defaults                                            */
@@ -245,7 +248,8 @@ export function blogJsonLd() {
     "@type": "Blog",
     "@id": `${site.baseUrl}/blog#blog`,
     url: absoluteUrl("/blog"),
-    name: `${site.blogTitle} — ${identity.nameFa}`,
+    // blogTitle already names him; appending identity.nameFa would repeat it.
+    name: site.blogTitle,
     description: DESCRIPTION_FA,
     inLanguage: "fa-IR",
     isPartOf: { "@id": SITE_ID },
@@ -256,11 +260,16 @@ export function blogJsonLd() {
 
 /** Ordered list of posts on the blog index — helps Google pick up the archive. */
 export function blogListJsonLd(posts: Post[]) {
+  return postListJsonLd(posts, absoluteUrl("/blog"), site.blogTitle);
+}
+
+/** The same ItemList shape, reused by the tag archives. */
+export function postListJsonLd(posts: Post[], pageUrl: string, name: string) {
   return {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "@id": `${absoluteUrl("/blog")}#posts`,
-    name: site.blogTitle,
+    "@id": `${pageUrl}#posts`,
+    name,
     numberOfItems: posts.length,
     itemListOrder: "https://schema.org/ItemListOrderDescending",
     itemListElement: posts.map((post, i) => ({
@@ -270,6 +279,47 @@ export function blogListJsonLd(posts: Post[]) {
       name: post.title,
     })),
   };
+}
+
+/**
+ * CollectionPage for a tag archive.
+ *
+ * `about` names the topic as an entity rather than leaving it as a string in
+ * `keywords`, which is what lets the archive be understood as "the page about
+ * هوش مصنوعی" instead of a page that happens to contain the words.
+ */
+export function tagCollectionJsonLd(tag: string, posts: Post[]) {
+  const url = absoluteUrl(tagPath(tag));
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${url}#collection`,
+    url,
+    name: tagTitle(tag),
+    description: tagDescription(tag, posts.length),
+    inLanguage: "fa-IR",
+    isPartOf: { "@id": `${site.baseUrl}/blog#blog` },
+    about: topicNode(tag),
+    author: personNode("fa"),
+    publisher: personNode("fa"),
+    mainEntity: { "@id": `${url}#posts` },
+  };
+}
+
+/** A topic as a schema.org Thing, so tags read as entities and not as strings. */
+function topicNode(tag: string) {
+  return { "@type": "Thing", name: tag };
+}
+
+/** Shared between the tag page's <title>, its OG title and its JSON-LD name. */
+export function tagTitle(tag: string): string {
+  return `${tag} — نوشته‌های ${identity.nameFa}`;
+}
+
+export function tagDescription(tag: string, count: number): string {
+  return `همهٔ نوشته‌های ${identity.nameFa} دربارهٔ ${tag}${
+    count ? ` — ${count} مطلب` : ""
+  }. یادداشت‌هایی درباره برنامه‌نویسی، هوش مصنوعی و ابزارهای متن‌باز.`;
 }
 
 /** Breadcrumbs. Persian labels, because every crumb here sits on an RTL page. */
@@ -358,7 +408,10 @@ export function blogPostingJsonLd(post: Post) {
     author: personNode(post.lang === "fa" ? "fa" : "en"),
     publisher: personNode(post.lang === "fa" ? "fa" : "en"),
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
-    keywords: post.tags.join(", "),
+    // The author's tags plus the phrases people actually search for them by —
+    // five hand-typed labels were never going to match a real Persian query.
+    keywords: postKeywords(post).join(", "),
+    about: post.tags.map(topicNode),
     articleSection: post.tags[0] ?? undefined,
     wordCount: wordCount(post),
     timeRequired: `PT${Math.max(1, post.readingMinutes)}M`,

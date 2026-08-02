@@ -712,6 +712,19 @@
 .ad-tag button:hover {
   color: var(--bad);
 }
+/* Suggested topics: the same chip, but clickable and visibly not yet applied. */
+.ad-tag--add {
+  background: none;
+  border-style: dashed;
+  color: var(--faint);
+  cursor: pointer;
+  font-family: inherit;
+}
+.ad-tag--add:hover {
+  background: var(--panel-2);
+  border-style: solid;
+  color: var(--txt);
+}
 
 /* score meter */
 .ad-score {

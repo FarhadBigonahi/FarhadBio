@@ -1,9 +1,8 @@
 "use client";
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import type { Post } from "@/lib/content";
 import { faNum } from "@/lib/fa";
+import PostCard from "./PostCard";
 
 // The blog index list, with search and tag filtering.
 //
@@ -117,45 +116,14 @@ export default function BlogList({ posts }: { posts: Post[] }) {
 
       <main className="wb-list">
         {shown.map((post, i) => (
-          <Link
+          <PostCard
             key={post.slug}
-            className={`wb-card${interacted ? "" : " wb-reveal"}`}
-            href={`/blog/${post.slug}`}
-          >
-            <div className="wb-card__media">
-              <Image
-                src={post.coverFallback}
-                alt={post.coverAlt}
-                fill
-                sizes="(max-width: 640px) 100vw, 220px"
-                // The first cover is the LCP element on this page; the rest stay
-                // lazy so they do not compete for the same bandwidth.
-                priority={i === 0}
-                style={{ objectFit: "cover", objectPosition: "center top" }}
-              />
-            </div>
-            <div className="wb-card__body" dir="rtl">
-              <div className="wb-tags">
-                {post.tags.slice(0, 3).map((t, j) => (
-                  <span
-                    key={t}
-                    className={`wb-tag ${j === 0 ? "wb-tag--accent" : ""}`.trim()}
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
-              <h2 className="wb-card__title">
-                {post.emoji} {post.title}
-              </h2>
-              <p className="wb-card__excerpt">{post.excerpt}</p>
-              <div className="wb-card__meta">
-                <time dateTime={post.date}>{post.dateFa}</time>
-                <span className="sep" />
-                <span>{post.readingFa}</span>
-              </div>
-            </div>
-          </Link>
+            post={post}
+            // The first cover is the LCP element on this page; the rest stay
+            // lazy so they do not compete for the same bandwidth.
+            priority={i === 0}
+            reveal={!interacted}
+          />
         ))}
 
         {shown.length === 0 && (

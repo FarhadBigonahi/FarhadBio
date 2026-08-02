@@ -5,6 +5,7 @@ import { adminRequest } from "@/lib/admin-fetch";
 import { t, faDigits } from "@/lib/admin-i18n";
 import type { Block } from "@/lib/api-types";
 import type { Post } from "@/lib/content";
+import { SUGGESTED_TAGS, normalizeFa } from "@/lib/topics";
 
 type Form = {
   status: string;
@@ -120,6 +121,14 @@ export default function PostEditor({ initial, id }: { initial?: Post; id?: numbe
     () => f.tagsText.split(",").map((s) => s.trim()).filter(Boolean),
     [f.tagsText]
   );
+
+  // Topics not already on the post. The schema stores at most 12 tags and drops
+  // the rest silently, so the row stops offering more once the post is full.
+  const suggestions = useMemo(() => {
+    if (tags.length >= 12) return [];
+    const used = new Set(tags.map(normalizeFa));
+    return SUGGESTED_TAGS.filter((s) => !used.has(normalizeFa(s)));
+  }, [tags]);
 
   // ---- length / reading time ----
   const stats = useMemo(() => {
@@ -492,6 +501,24 @@ export default function PostEditor({ initial, id }: { initial?: Post; id?: numbe
               {tags.length > 0 && (
                 <div className="ad-tagrow" style={{ marginTop: 10 }}>
                   {tags.map((tag) => <span className="ad-tag" key={tag} dir="auto">{tag}</span>)}
+                </div>
+              )}
+              {/* One click per topic. Every suggestion here has Persian search
+                  phrases behind it in lib/topics.ts, so a tag picked from this
+                  row reaches queries that a freehand label would not. */}
+              {suggestions.length > 0 && (
+                <div className="ad-tagrow" style={{ marginTop: 10 }}>
+                  {suggestions.map((tag) => (
+                    <button
+                      type="button"
+                      key={tag}
+                      className="ad-tag ad-tag--add"
+                      dir="auto"
+                      onClick={() => set("tagsText", [...tags, tag].join(", "))}
+                    >
+                      + {tag}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>

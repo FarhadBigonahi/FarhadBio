@@ -23,10 +23,12 @@ export const site = {
   sectionHeading: "Latest Insights",
   sectionSubtitle: "Notes on building, AI and open-source tools.",
   viewAllLabel: "View all posts",
-  // The eyebrow sits directly above the blog <h1>. Naming him here puts the
-  // exact Persian query string in visible text at the top of the page.
-  blogEyebrow: "بلاگ فرهاد بیگناهی",
-  blogTitle: "آخرین مطالب",
+  // The <h1> carries the name, not the eyebrow above it. "آخرین مطالب" was a
+  // label for a widget, not a page: it matched no query and wasted the single
+  // strongest heading on the archive. The eyebrow now holds the topic line,
+  // which is where the broad subject keywords belong.
+  blogEyebrow: "برنامه‌نویسی · هوش مصنوعی · ابزارهای متن‌باز",
+  blogTitle: "بلاگ فرهاد بیگناهی",
   // Shown under the blog <h1>. It used to read "ریلز ها", which described
   // nothing on the page and matched no query anyone would type.
   blogSubtitle: "یادداشت‌هایی درباره برنامه‌نویسی، هوش مصنوعی و ابزارهای متن‌باز",

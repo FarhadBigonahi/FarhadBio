@@ -53,7 +53,7 @@ ${post.tags.map((t) => `      <category>${xml(t)}</category>`).join("\n")}
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
-    <title>${xml(`${site.blogTitle} — ${identity.nameFa}`)}</title>
+    <title>${xml(site.blogTitle)}</title>
     <link>${xml(absoluteUrl("/blog"))}</link>
     <description>${xml(DESCRIPTION_FA)}</description>
     <language>fa-ir</language>

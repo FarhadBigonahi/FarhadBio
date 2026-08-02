@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { getAllPostsSafe, getPost, site, type Block, type Post } from "@/lib/content";
+import { decodeParam, findByTitleSlug, postKeywords, tagPath } from "@/lib/topics";
 import { BlogNav, BlogFooter } from "@/components/BlogChrome";
 import BlogEnhancements from "@/components/BlogEnhancements";
 import ReadingProgress from "@/components/ReadingProgress";
@@ -33,10 +34,31 @@ export async function generateStaticParams() {
   return (await getAllPostsSafe()).map((p) => ({ slug: p.slug }));
 }
 
+/**
+ * The post behind a URL segment.
+ *
+ * Post slugs are canonically ASCII. A Persian-script URL built from the title
+ * is the natural thing for a reader to type or hand-write, so rather than
+ * answering it with a 404 we send a 301 to the canonical URL: the Persian form
+ * works, and exactly one URL is ever indexed.
+ */
+async function loadPost(param: string): Promise<Post> {
+  const slug = decodeParam(param);
+  // The backend caps slugs at 200 chars. Anything longer is a mangled or
+  // hostile URL, and forwarding it earns a 414 that would surface as a 500.
+  if (slug.length > 200) notFound();
+
+  const post = await getPost(slug);
+  if (post) return post;
+
+  const alias = findByTitleSlug(await getAllPostsSafe(), slug);
+  if (alias) permanentRedirect(postPath(alias.slug));
+  notFound();
+}
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPost(slug);
-  if (!post) return {};
+  const post = await loadPost(slug);
   const url = absoluteUrl(postPath(post.slug));
   // Uploaded covers are already absolute (api.farhad.bio); only site-relative
   // paths need the base URL prepended for a valid OG/Twitter image.
@@ -49,9 +71,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title: { absolute: title },
     description: post.metaDescription,
-    // Post tags are the author's own topic labels — the closest thing the site
-    // has to hand-picked keywords for a Persian query.
-    keywords: [...post.tags, identity.nameFa, identity.name],
+    // The author's tags, expanded into the phrases people actually search for
+    // them by — see lib/topics.ts. Five bare labels matched almost no real query.
+    keywords: postKeywords(post),
     alternates: alternates(postPath(post.slug)),
     openGraph: {
       type: "article",
@@ -263,8 +285,7 @@ function renderBlock(block: Block, i: number, headingIds: Map<number, string>) {
 
 export default async function Article({ params }: Params) {
   const { slug } = await params;
-  const post = await getPost(slug);
-  if (!post) notFound();
+  const post = await loadPost(slug);
 
   const all = await getAllPostsSafe();
   const related = relatedPosts(post, all);
@@ -299,14 +320,18 @@ export default async function Article({ params }: Params) {
                 </svg>
                 <span>بازگشت به بلاگ</span>
               </Link>
+              {/* Links, not labels. Each one is an inbound link to a topic
+                  archive and gives this article an outbound link described by
+                  the exact Persian phrase the archive is trying to rank for. */}
               <div className="wb-tags">
                 {post.tags.map((tag, i) => (
-                  <span
+                  <Link
                     key={tag}
+                    href={tagPath(tag)}
                     className={`wb-tag ${i === 0 ? "wb-tag--accent" : ""}`.trim()}
                   >
                     {tag}
-                  </span>
+                  </Link>
                 ))}
               </div>
               <h1 className="wb-hero__title">
