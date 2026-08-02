@@ -6,6 +6,7 @@ import * as repo from "./analytics.repo";
 import * as postsRepo from "../posts/posts.repo";
 import {
   deviceFromUA,
+  normalizePath,
   postSlugFromPath,
   shouldRecord,
   sourceFromReferrer,
@@ -43,7 +44,9 @@ export async function analyticsRoutes(app: FastifyInstance): Promise<void> {
       // A malformed beacon is the client's problem, never ours: 204 and move on.
       if (!parsed.success) return reply.code(204).send();
 
-      const { path, referrer, session } = parsed.data;
+      const { referrer, session } = parsed.data;
+      // Stored decoded, so `events.path` and `posts.slug` are the same string.
+      const path = normalizePath(parsed.data.path);
       const ua = req.headers["user-agent"] ?? "";
       if (!shouldRecord(path, ua)) return reply.code(204).send();
 

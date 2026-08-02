@@ -3,7 +3,7 @@ import type { DayPoint, Ranked } from "@/lib/api-types";
 import { faCompact, faDigits } from "@/lib/admin-i18n";
 
 /** Persian compact number — kept named `fmt` for the pages that already call it. */
-export function fmt(n: number): string {
+export function fmt(n: number | null | undefined): string {
   return faCompact(n);
 }
 

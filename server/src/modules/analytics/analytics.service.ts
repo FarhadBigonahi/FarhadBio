@@ -35,6 +35,26 @@ export function shouldRecord(path: string, ua: string): boolean {
 }
 
 /**
+ * The stored form of a pageview path.
+ *
+ * A browser percent-encodes a non-ASCII URL, so a Persian-slugged article is
+ * reported by the beacon as `/blog/%D9%87...` while the post row holds the
+ * decoded slug. Every per-post query joins events to posts on that string, and
+ * SQLite cannot URL-decode — so the two are made to agree here, at the single
+ * point where a path enters the system, rather than in four queries that
+ * physically cannot do it.
+ */
+export function normalizePath(path: string): string {
+  try {
+    return decodeURIComponent(path);
+  } catch {
+    // Malformed escape sequence. Keep the raw path: a view we cannot tidy is
+    // still a view, and dropping it would understate real traffic.
+    return path;
+  }
+}
+
+/**
  * The post slug a pageview path points at, or "" when the path is not an
  * article. Tolerates the trailing slash and percent-encoding a Persian slug
  * picks up on its way through a browser.

@@ -62,7 +62,13 @@ export type Overview = {
   visitorsTrend: number;
   posts: number;
   avgPerVisitor: number;
-  totalPostViews: number;
+  /**
+   * Lifetime article reads. Optional for the same reason `Post.views` is: a
+   * backend older than the view counter answers this endpoint without the
+   * field, and the dashboard must render that as "no number", not as the word
+   * "undefined".
+   */
+  totalPostViews?: number;
 };
 
 export type DayPoint = { day: string; views: number; visitors: number };
