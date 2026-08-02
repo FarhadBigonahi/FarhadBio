@@ -6,7 +6,7 @@ import type { Block, Post, PostRecord } from "./posts.schema";
 
 const COLUMNS = `id,slug,status,lang,dir,emoji,title,subtitle,excerpt,meta_title,
   meta_description,cover,cover_fallback,cover_alt,cover_width,cover_height,date,
-  date_fa,date_en,reading_minutes,reading_fa,tags,repo,npm,body,views`;
+  date_fa,date_en,reading_minutes,reading_fa,tags,repo,npm,body,views,updated_at`;
 
 function safeJson<T>(value: unknown, fallback: T): T {
   try {
@@ -14,6 +14,16 @@ function safeJson<T>(value: unknown, fallback: T): T {
   } catch {
     return fallback;
   }
+}
+
+/**
+ * An epoch-millisecond column as an ISO-8601 string, or "" if it holds nothing
+ * usable. Empty is meaningful to the frontend: it means "no modification time
+ * on record", and the publication date is used instead.
+ */
+function isoMillis(value: unknown): string {
+  const ms = Number(value);
+  return Number.isFinite(ms) && ms > 0 ? new Date(ms).toISOString() : "";
 }
 
 /** snake_case DB row -> camelCase wire shape the frontend consumes. */
@@ -45,6 +55,10 @@ function toPost(r: Row): Post {
     npm: String(r.npm),
     body: safeJson<Block[]>(r.body, []),
     views: Number(r.views ?? 0),
+    // The freshness signal. `date` is the day the article was published and is
+    // never revised, so on its own it told search engines that a post edited
+    // this morning had not changed since the day it went up.
+    updatedAt: isoMillis(r.updated_at),
   };
 }
 

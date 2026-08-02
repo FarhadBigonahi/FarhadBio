@@ -130,10 +130,16 @@ export type PostRecord = {
 };
 
 /**
- * Public post shape = the record, plus the two fields the editor never sends:
- * the database identity and the read counter.
+ * Public post shape = the record, plus the fields the editor never sends: the
+ * database identity, the read counter, and the last-saved timestamp that the
+ * frontend publishes as `dateModified`.
  */
-export type Post = PostRecord & { id: number; views: number };
+export type Post = PostRecord & {
+  id: number;
+  views: number;
+  /** ISO-8601, or "" when the row carries no usable updated_at. */
+  updatedAt: string;
+};
 
 const WORDS_PER_MINUTE = 200;
 
