@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAllPostsSafe, site } from "@/lib/content";
+import { getAllPostsForPage, getAllPostsSafe, site } from "@/lib/content";
 import { BlogNav, BlogFooter } from "@/components/BlogChrome";
 import BlogEnhancements from "@/components/BlogEnhancements";
 import PostCard from "@/components/PostCard";
@@ -54,7 +54,12 @@ async function resolve(param: string) {
   // Decode first — the segment arrives percent-encoded — then re-normalise, so
   // a hand-typed URL with odd spacing or an Arabic yeh still lands.
   const slug = tagSlug(decodeParam(param));
-  const all = await getAllPostsSafe();
+  // Deliberately the throwing variant, unlike generateStaticParams above. An
+  // empty list here is indistinguishable from "no such tag", so degrading on an
+  // outage would call notFound() below and let Next.js cache a 404 over a tag
+  // archive that exists — the same trap getPost() guards against. Letting the
+  // error out keeps the last good archive on screen instead.
+  const all = await getAllPostsForPage();
   const label = tagLabel(all, slug);
   return label ? { label, posts: postsForTag(all, slug), all } : null;
 }
