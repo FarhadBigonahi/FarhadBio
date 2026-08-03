@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAllPosts, getAllPostsSafe, site } from "@/lib/content";
+import { getAllPostsForPage, getAllPostsSafe, site } from "@/lib/content";
 import { BlogNav, BlogFooter } from "@/components/BlogChrome";
 import BlogEnhancements from "@/components/BlogEnhancements";
 import BlogList from "@/components/BlogList";
@@ -84,7 +84,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BlogIndex() {
-  const posts = await getAllPosts();
+  const posts = await getAllPostsForPage();
   const topics = allTags(posts);
 
   return (

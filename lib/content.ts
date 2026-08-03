@@ -45,7 +45,8 @@ export const site = {
  * Throws if the backend is unreachable. That is deliberate: a thrown error
  * during ISR revalidation makes Next.js keep serving the last good page, which
  * is far better than replacing a working blog with an empty one. Callers that
- * genuinely cannot fail (sitemap, generateStaticParams) use getAllPostsSafe.
+ * genuinely cannot fail (sitemap, generateStaticParams) use getAllPostsSafe;
+ * pages that are both prerendered and revalidated use getAllPostsForPage.
  */
 export async function getAllPosts(): Promise<Post[]> {
   const { posts } = await apiGet<{ posts: Post[] }>("/v1/posts", {
@@ -78,6 +79,27 @@ export async function getAllPostsSafe(): Promise<Post[]> {
     console.error("[content] backend unreachable, continuing without posts:", err);
     return [];
   }
+}
+
+/**
+ * Posts for a page that is prerendered at build time *and* revalidated later.
+ *
+ * Those two moments want opposite failure behaviour, which is the whole reason
+ * this exists next to the two above:
+ *
+ *   - At build time there is no previously rendered page to fall back to, so
+ *     letting the error escape takes the entire deploy down over a backend that
+ *     is merely asleep — or, on a preview build, over an env var that was only
+ *     ever set for production. Degrade to an empty page instead; the first
+ *     revalidation fills it in on its own.
+ *   - At revalidation the last good page still exists, and throwing is exactly
+ *     what makes Next.js keep serving it rather than publish an empty blog.
+ */
+export async function getAllPostsForPage(): Promise<Post[]> {
+  // Set by Next.js for the duration of `next build`, including inside the
+  // workers that run static generation.
+  const building = process.env.NEXT_PHASE === "phase-production-build";
+  return building ? getAllPostsSafe() : getAllPosts();
 }
 
 function isNotFound(err: unknown): boolean {
